@@ -136,15 +136,30 @@ define(function (require) {
    *  @method waveform
    *  @param {Number} [bins]    Must be a power of two between
    *                            16 and 1024. Defaults to 1024.
+   *  @param {Number} [scale]    If "dB," returns float measurements between -140 and 0 (max).
+   *                             Otherwise returns integers from 0-255.
    *  @return {Array}  Array    Array of amplitude values (0-255)
    *                            over time. Array length = bins.
    *
    */
   p5.FFT.prototype.waveform = function(bins) {
-    if (bins) {
-      this.analyser.fftSize = bins*2;
+    var bins, mode;
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i] instanceof String) {
+        bins = arguments[i];
+        this.analyser.fftSize = bins*2;
+      } else if (arguments[i] instanceof Number) {
+        mode = arguments[i];
+      }
     }
-    this.analyser.getByteTimeDomainData(this.timeDomain);
+    if (mode && mode.toLowerCase() === "db") {
+      timeToFloat(this, this.timeDomain);
+      this.analyser.getFloatFrequencyData(this.freqDomain);
+    }
+    else {
+      timeToInt(this, this.timeDomain);
+      this.analyser.getByteTimeDomainData(this.timeDomain);
+    }
     var  normalArray = Array.apply( [], this.timeDomain );
     normalArray.length === this.analyser.fftSize;
     normalArray.constructor === Array;
@@ -163,6 +178,8 @@ define(function (require) {
    *  @method analyze
    *  @param {Number} [bins]    Must be a power of two between
    *                             16 and 1024. Defaults to 1024.
+   *  @param {Number} [scale]    If "dB," returns float measurements between -140 and 0 (max).
+   *                             Otherwise returns integers from 0-255.
    *  @return {Array} spectrum    Array of energy (amplitude/volume)
    *                              values across the frequency spectrum.
    *                              Lowest energy (silence) = 0, highest
@@ -202,11 +219,24 @@ define(function (require) {
    *                                   
    *
    */
-  p5.FFT.prototype.analyze = function(bins) {
-    if (bins) {
-      this.analyser.fftSize = bins*2;
+  p5.FFT.prototype.analyze = function(bins, mode) {
+    var bins, mode;
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i] instanceof String) {
+        bins = arguments[i];
+        this.analyser.fftSize = bins*2;
+      } else if (arguments[i] instanceof Number) {
+        mode = arguments[i];
+      }
     }
-    this.analyser.getByteFrequencyData(this.freqDomain);
+    if (mode && mode.toLowerCase() === "db") {
+      freqToFloat(this);
+      this.analyser.getFloatFrequencyData(this.freqDomain);
+    }
+    else {
+      freqToInt(this, this.freqDomain);
+      this.analyser.getByteFrequencyData(this.freqDomain);
+    }
     var  normalArray = Array.apply( [], this.freqDomain );
     normalArray.length === this.analyser.fftSize;
     normalArray.constructor === Array;
@@ -314,5 +344,31 @@ define(function (require) {
   p5.FFT.prototype.smooth = function(s) {
     this.analyser.smoothingTimeConstant = s;
   };
+
+  // helper methods to convert type from float (dB) to int (0-255)
+  var freqToFloat = function(fft) {
+    if (fft.freqDomain instanceof Float32Array === false) {
+      fft.freqDomain = new Float32Array(fft.analyser.frequencyBinCount);
+    }
+  };
+
+  var freqToInt = function(fft) {
+    if (fft.freqDomain instanceof Uint8Array === false) {
+      fft.freqDomain = new Uint8Array(fft.analyser.frequencyBinCount);
+    }
+  };
+
+  var timeToFloat = function(fft) {
+    if (fft.timeDomain instanceof Uint8Array === false) {
+      fft.timeDomain = new Uint8Array(fft.analyser.frequencyBinCount);
+    }
+  };
+
+  var timeToInt = function(fft) {
+    if (fft.timeDomain instanceof Uint8Array === false) {
+      fft.timeDomain = new Uint8Array(fft.analyser.frequencyBinCount);
+    }
+  };
+
 
 });
