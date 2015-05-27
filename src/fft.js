@@ -83,17 +83,16 @@ define(function (require) {
    *  </code></div>
    */
   p5.FFT = function(smoothing, bins) {
-    var SMOOTHING = smoothing || 0.8;
-    if (smoothing === 0) {
-      SMOOTHING = smoothing;
-    }
-    var FFT_SIZE = bins*2 || 2048;
+    this.smoothing = smoothing || 0.8;
+    this.bins = bins || 1024;
+
+    var FFT_SIZE = this.bins*2;
     this.analyser = p5sound.audiocontext.createAnalyser();
 
     // default connections to p5sound master
-    p5sound.output.connect(this.analyser);
+    p5sound.fftMeter.connect(this.analyser);
 
-    this.analyser.smoothingTimeConstant = SMOOTHING;
+    this.analyser.smoothingTimeConstant = this.smoothing;
     this.analyser.fftSize = FFT_SIZE;
 
     this.freqDomain = new Uint8Array(this.analyser.frequencyBinCount);
@@ -114,17 +113,20 @@ define(function (require) {
    *
    *  @method  setInput
    *  @param {Object} [source] p5.sound object (or web audio API source node)
-   *  @param {Number} [bins]  Must be a power of two between 16 and 1024
    */
-  p5.FFT.prototype.setInput = function(source, bins) {
-    if (bins) {
-      this.analyser.fftSize = bins*2;
-    }
-    if (source.output){
-      source.output.connect(this.analyser);
+  p5.FFT.prototype.setInput = function(source) {
+    if (!source) {
+      p5sound.fftMeter.connect();
+
     } else {
-      source.connect(this.analyser);
+      if (source.output){
+        source.output.connect(this.analyser);
+      } else if(source) {
+        source.connect(this.analyser);
+      }
+      p5sound.fftMeter.disconnect();
     }
+
   };
 
   /**
@@ -143,7 +145,10 @@ define(function (require) {
   p5.FFT.prototype.waveform = function(bins) {
     if (bins) {
       this.analyser.fftSize = bins*2;
+    } else {
+      this.analyser.fftSize = this.bins * 2;
     }
+    this.analyser.smoothingTimeConstant = this.smoothing;
     this.analyser.getByteTimeDomainData(this.timeDomain);
     var  normalArray = Array.apply( [], this.timeDomain );
     normalArray.length === this.analyser.fftSize;
@@ -205,7 +210,10 @@ define(function (require) {
   p5.FFT.prototype.analyze = function(bins) {
     if (bins) {
       this.analyser.fftSize = bins*2;
+    } else {
+      this.analyser.fftSize = this.bins * 2;
     }
+    this.analyser.smoothingTimeConstant = this.smoothing;
     this.analyser.getByteFrequencyData(this.freqDomain);
     var  normalArray = Array.apply( [], this.freqDomain );
     normalArray.length === this.analyser.fftSize;
@@ -312,7 +320,150 @@ define(function (require) {
    *                               Defaults to 0.8.
    */
   p5.FFT.prototype.smooth = function(s) {
+    this.smoothing = s;
     this.analyser.smoothingTimeConstant = s;
   };
+
+  /**
+   *  Get Pitch inspired by Chris Wilson's Pitch Detect
+   *  
+   *  https://github.com/cwilso/PitchDetect
+   *
+   *  Note: This temporarily resets the fftSize to the
+   *  maximum amount for more accuracy, resulting in 1024 bins.
+   *
+   *  Note: This won't work on Safari because analyser.getFloatTimeDomainData is not yet implemented.
+   *  
+   *  @method  getPitch
+   *  @param {Number} returnType 0 = frequency (Hz), 1 = MIDI number, 2 = Array [midiNumber, cents]
+   *  @return {Number} Pitch as a frequency or MIDI number
+   */
+   p5.FFT.prototype.getPitch = function(_returnType) {
+    var returnType = _returnType || 0;
+    var fftSize = 2048;
+    var bufLen = fftSize/2;
+    var buf = new Float32Array( bufLen );
+
+    // this.analyser.smoothingTimeConstant = 0.7;
+    this.analyser.fftSize = fftSize;
+    this.analyser.getFloatTimeDomainData( buf );
+
+    var pitch = _autoCorrelate( buf );
+
+    if (pitch > 80 && pitch < 1200) {
+      var dif = Math.sqrt( Math.abs(pitch*pitch - this._lastPitch*this._lastPitch) );
+
+      // throw out big attacks
+      if (this._lastPitch && dif > 400) {
+        this._lastPitch = Math.abs(pitch - this._lastPitch)/2;
+        return false;
+      }
+
+      this._lastPitch = pitch;
+
+      var note = p5.prototype.freqToMidi(pitch);
+      var cents = centsOffFromPitch (pitch, note);
+
+      switch(returnType) {
+        case 0:
+          return pitch;
+        case 1:
+          return note;
+        case 2:
+          var noteName = noteStrings[note%12];
+          var octave = Math.floor(note/12);
+          return noteName + octave;
+        case 3:
+          return [note, cents];
+        case 4:
+          return [pitch, note, cents];
+      }
+    } else {
+      return false;
+    }
+   };
+
+    var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+   // (c) Chris Wilson MIT License 2014 via https://github.com/cwilso/PitchDetect
+   // also useful: https://plus.google.com/u/0/+ChrisWilson/posts/9zHsF9PCDAL
+   // returns frequency
+   function _autoCorrelate( buf ) {
+    var bufLen = buf.length;
+    var max_samples = Math.floor(bufLen/2);
+    var min_samples = 0;
+    var best_offset = -1;
+    var best_correlation = 0;
+    var rms = 0;
+    var foundGoodCorrelation = false;
+    var correlations = new Array(max_samples);
+    var sampleRate = p5sound.audiocontext.sampleRate;
+
+    for (var i = 0; i < bufLen; i++) {
+      var val = buf[i];
+      rms += val*val;
+    }
+
+    rms = Math.sqrt(rms/bufLen);
+
+    // not enough signal
+    if (rms < 0.01) {
+      return -1;
+    }
+
+    var lastCorrelation = 1;
+
+    for (var offset = min_samples; offset < max_samples; offset++) {
+      var correlation = 0;
+
+      for (var i = 0; i < max_samples; i++) {
+        correlation += Math.abs( (buf[i]) - (buf[i+offset]) );
+      }
+
+      correlation = 1 - (correlation/max_samples);
+      correlations[offset] = correlation; // store it
+
+      if ( (correlation > 0.92) && (correlation > lastCorrelation) ) {
+        foundGoodCorrelation = true;
+        if (correlation > best_correlation) {
+          best_correlation = correlation;
+          best_offset = offset;
+        }
+      }
+      else if (foundGoodCorrelation) {
+        // via https://plus.google.com/u/0/+ChrisWilson/posts/9zHsF9PCDAL
+        // var alpha = buf[best_offset-1]/0.434294481;
+        // var beta = buf[best_offset]/0.434294481;
+        // var gamma = buf[best_offset+1]/0.434294481;
+        // best_offset += (gamma-alpha)/(2*((2*beta)-gamma-alpha));
+
+        // // Then, the fundamental frequency is calculated as:
+        // var pitch = best_offset*(sampleRate/(2*bufLen));﻿
+        // console.log(pitch);
+        // return pitch;
+
+        // short circuit return
+        var shift = (correlations[best_offset+1] - correlations[best_offset-1])/correlations[best_offset];
+        var pitch = sampleRate/(best_offset+(8*shift));
+        if (pitch > 80 && pitch < 1400) {
+          return pitch;
+        }
+      }
+      lastCorrelation = correlation;
+    }
+
+    if (best_correlation > 0.01) {
+      var pitch = sampleRate/best_offset;
+      if (pitch > 80 && pitch < 1400) {
+        return sampleRate/best_offset;
+      }
+    }
+    return -1;
+   }
+
+    // helper
+    function centsOffFromPitch( frequency, note ) {
+      return Math.floor( 1200 * Math.log( frequency / midiToFreq( note ))/Math.log(2) );
+    }
 
 });
