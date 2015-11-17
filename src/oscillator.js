@@ -6,6 +6,7 @@ define(function (require) {
   var Add = require('Tone/signal/Add');
   var Mult = require('Tone/signal/Multiply');
   var Scale = require('Tone/signal/Scale');
+  var ScaleExp = require('Tone/signal/ScaleExp');
 
   /**
    *  <p>Creates a signal that oscillates between -1.0 and 1.0.
@@ -194,7 +195,6 @@ define(function (require) {
     }
 
     else if (vol) {
-      console.log(vol);
       vol.connect(self.output.gain);
     } else {
       // return the Gain Node
@@ -245,9 +245,9 @@ define(function (require) {
         this.oscillator.frequency.linearRampToValueAtTime(val, tFromNow + rampTime + now);
       }
     } else if (val) {
-      if (val.output){
-        val = val.output;
-      }
+      // if (val.output){
+      //   val = val.output;
+      // }
       val.connect(this.oscillator.frequency);
 
       // keep track of what is modulating this param
@@ -387,7 +387,8 @@ define(function (require) {
     // assume source is the oscillator unless i > 0
     if (i > 0){
       chainSource = o.mathOps[i-1];
-    } 
+    }
+
     chainSource.disconnect();
     chainSource.connect(mathObj);
     mathObj.connect(nextChain);
@@ -443,24 +444,41 @@ define(function (require) {
    *  @return {p5.Oscillator} Oscillator Returns this oscillator
    *                                     with scaled output
    */
-  p5.Oscillator.prototype.scale = function(inMin, inMax, outMin, outMax) {
-    var mapOutMin, mapOutMax;
-    if (arguments.length === 4){
-      mapOutMin = p5.prototype.map(outMin, inMin, inMax, 0, 1) - 0.5;
-      mapOutMax = p5.prototype.map(outMax, inMin, inMax, 0, 1) - 0.5;
-    }
-    else {
-      mapOutMin = arguments[0];
-      mapOutMax = arguments[1];
-    }
-    var scale = new Scale(mapOutMin, mapOutMax);
-    var thisChain = this.mathOps.length-1;
-    var nextChain = this.output;
-    return sigChain(this, scale, thisChain, nextChain, Scale);
+  p5.Oscillator.prototype.scale = function(outZero, outMax, exp) {
+    // var mapOutMin, mapOutMax;
+    // if (arguments.length === 4){
+    //   mapOutMin = p5.prototype.map(outMin, inMin, inMax, 0, 1);
+    //   mapOutMax = p5.prototype.map(outMax, inMin, inMax, 0, 1);
+    // }
+    // else {
+    //   mapOutMin = arguments[0];
+    //   mapOutMax = arguments[1];
+    // }
+
+    this.output.gain.setValueAtTime(1, p5sound.audiocontext.currentTime + 0.1);
+    var s = new ScaleExp(outZero, outMax, exp);
+    this.output.disconnect();
+    this.output.connect(s);
+    s.connect(this.panner);
+    // window._sc = s;
+    // var thisChain = this.mathOps.length-1;
+    // var nextChain = this.output;
+    // this.mathOps = _sc;
+    // this.oscillator.disconnect();
+    // this.oscillator.connect(this.mathOps);
+    // this.mathOps.connect(this.output);
+
+    // this.oscillator.disconnect();
+    // this.oscillator.connect(s);
+    // s.connect(this.output);
+    // return s;
+    // return sigChain(this, s, thisChain, nextChain, Scale);
+
 
     // this.output.disconnect();
     // this.output.connect(scale)
   };
+
 
   // ============================== //
   // SinOsc, TriOsc, SqrOsc, SawOsc //
