@@ -6,36 +6,38 @@ define(function (require) {
   var ac = p5sound.audiocontext;
 
   // Stereo panner
+  // // removing because it impacts gain values
+
   // if there is a stereo panner node use it
-  if(typeof ac.createStereoPanner !== "undefined"){
-    p5.Panner = function (input, output, numInputChannels) {
-      this.stereoPanner = this.input = ac.createStereoPanner();
-      input.connect(this.stereoPanner);
-      this.stereoPanner.connect(output);
-    };
+  // if(typeof ac.createStereoPanner !== "undefined"){
+  //   p5.Panner = function (input, output, numInputChannels) {
+  //     this.stereoPanner = this.input = ac.createStereoPanner();
+  //     input.connect(this.stereoPanner);
+  //     this.stereoPanner.connect(output);
+  //   };
 
-    p5.Panner.prototype.pan = function(val, tFromNow) {
-      var time = tFromNow || 0;
-      var t = ac.currentTime + time;
+  //   p5.Panner.prototype.pan = function(val, tFromNow) {
+  //     var time = tFromNow || 0;
+  //     var t = ac.currentTime + time;
 
-      this.stereoPanner.pan.linearRampToValueAtTime(val, t);
-    };
+  //     this.stereoPanner.pan.linearRampToValueAtTime(val, t);
+  //   };
 
-    p5.Panner.prototype.inputChannels = function(numChannels) {
-      //not implemented because stereopanner 
-      //node does not require this and will automatically
-      //convert single channel or multichannel to stereo.
-      //tested with single and stereo, not with (>2) multichannel 
-    };
+  //   p5.Panner.prototype.inputChannels = function(numChannels) {
+  //     //not implemented because stereopanner 
+  //     //node does not require this and will automatically
+  //     //convert single channel or multichannel to stereo.
+  //     //tested with single and stereo, not with (>2) multichannel 
+  //   };
 
-    p5.Panner.prototype.connect = function(obj) {
-      this.stereoPanner.connect(obj);
-    };
-    p5.Panner.prototype.disconnect = function(obj) {
-      this.stereoPanner.disconnect();
-    };
+  //   p5.Panner.prototype.connect = function(obj) {
+  //     this.stereoPanner.connect(obj);
+  //   };
+  //   p5.Panner.prototype.disconnect = function(obj) {
+  //     this.stereoPanner.disconnect();
+  //   };
 
-  } else {
+  // } else {
     // if there is no createStereoPanner object
     // such as in safari 7.1.7 at the time of writing this
     // use this method to create the effect
@@ -101,7 +103,7 @@ define(function (require) {
     p5.Panner.prototype.disconnect = function(obj) {
       this.output.disconnect();
     };
-  }
+  // }
 
   // 3D panner
   p5.Panner3D = function(input, output) {
