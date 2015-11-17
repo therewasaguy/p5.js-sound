@@ -126,11 +126,7 @@ define(function (require) {
     if (!source) {
       p5sound.fftMeter.connect(this.analyser);
     } else {
-      if (source.output) {
-        source.output.connect(this.analyser);
-      } else if (source.connect) {
-        source.connect(this.analyser);
-      }
+      source.connect(this.analyser);
       p5sound.fftMeter.disconnect();
     }
   };
@@ -164,7 +160,7 @@ define(function (require) {
       }
     }
 
-    // getFloatFrequencyData doesnt work in Safari as of 5/2015
+    // getFloatTimeDomainData doesnt work in Safari as of 11/2015
     if (mode && !p5.prototype._isSafari()) {
       timeToFloat(this, this.timeDomain);
       this.analyser.getFloatTimeDomainData(this.timeDomain);
@@ -172,7 +168,7 @@ define(function (require) {
     } else {
       timeToInt(this, this.timeDomain);
       this.analyser.getByteTimeDomainData(this.timeDomain);
-      var  normalArray = new Array();
+      var normalArray = new Array();
       for (var i = 0; i < this.timeDomain.length; i++) {
         var scaled = p5.prototype.map(this.timeDomain[i], 0, 255, -1, 1);
         normalArray.push(scaled);
