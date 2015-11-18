@@ -1,6 +1,6 @@
 // note this example does not work on
 // Safari because getFloatTimeDomainData
-// has not yet been implemented (as of Novemeber 2015)
+// has not yet been implemented (as of November 2015)
 
 var sqr;
 var lowPass;
