@@ -27,7 +27,6 @@ define(function (require) {
     if (elapsedTime - this.tatumTime <= -0.02) {
       return;
     } else {
-      // console.log('ok', this.syncedParts[0].phrases[0].name);
       this.prevTick = tickTime;
 
       // for all of the active things on the metro:
