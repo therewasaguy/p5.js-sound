@@ -22,6 +22,7 @@ define(function (require) {
   require('reverb');
   require('metro');
   require('looper');
+  require('soundloop');
   require('compressor');
   require('soundRecorder');
   require('peakdetect');
