@@ -29,6 +29,7 @@ define(function (require) {
   require('peakdetect');
   require('gain');
   require('distortion');
+  require('audioVoice');
   require('monosynth');
   require('polysynth');
 
