@@ -18,6 +18,8 @@ define(function (require) {
   require('audioin');
   require('filter');
   require('eq');
+  require('panner3d');
+  require('listener3d');
   require('delay');
   require('reverb');
   require('metro');
@@ -28,6 +30,9 @@ define(function (require) {
   require('peakdetect');
   require('gain');
   require('distortion');
+  require('audioVoice');
+  require('monosynth');
+  require('polysynth');
 
   return p5SOUND;
 

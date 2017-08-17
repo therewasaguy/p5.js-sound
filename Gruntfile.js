@@ -79,6 +79,8 @@ module.exports = function(grunt) {
             'env': 'src/env',
             'delay': 'src/delay',
             'effect': 'src/effect',
+            'panner3d' : 'src/panner3d',
+            'listener3d': 'src/listener3d',
             'filter': 'src/filter',
             'reverb': 'src/reverb',
             'eq': 'src/eq',
@@ -90,7 +92,10 @@ module.exports = function(grunt) {
             'signal': 'src/signal',
             'metro': 'src/metro',
             'peakdetect': 'src/peakDetect',
-            'gain': 'src/gain'
+            'gain': 'src/gain',
+            'audioVoice': 'src/audioVoice',
+            'monosynth': 'src/monosynth',
+            'polysynth': 'src/polysynth'
           },
           useStrict: true,
           wrap: {
