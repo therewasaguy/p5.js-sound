@@ -165,8 +165,7 @@ function ThreshLine(type) {
     else if (mouseY > fftHeight) {this.y = fftHeight;}
     else { this.y = mouseY;}
     this.current = map(this.y, fftHeight, height - fftHeight, -100,0);
-
-
+    compressor.threshold(this.current);
   };
 
   this.mouseOver = function () {
