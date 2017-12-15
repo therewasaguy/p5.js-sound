@@ -2,6 +2,7 @@
 
 define(function (require) {
   var p5sound = require('master');
+  var AudioParamUtils = require('utils/audioParam');
 
   var Add = require('Tone/signal/Add');
   var Mult = require('Tone/signal/Multiply');
@@ -80,19 +81,16 @@ define(function (require) {
 
     // components
     this.phaseAmount = undefined;
-    this.oscillator = p5sound.audiocontext.createOscillator();
-    this.f = freq || 440.0; // frequency
-    this.oscillator.type = type || 'sine';
-    this.oscillator.frequency.setValueAtTime(this.f, p5sound.audiocontext.currentTime);
 
     // connections
+    this.oscillator = p5sound.audiocontext.createOscillator();
     this.output = p5sound.audiocontext.createGain();
 
-    this._freqMods = []; // modulators connected to this oscillator's frequency
-
+    this.f = freq || 440.0; // frequency
+    this.oscillator.type = type || 'sine';
+    AudioParamUtils.setValue(this.oscillator.frequency, this.f);
     // set default output gain to 0.5
-    this.output.gain.value = 0.5;
-    this.output.gain.setValueAtTime(0.5, p5sound.audiocontext.currentTime);
+    AudioParamUtils.setValue(this.output.gain, 0.5);
 
     this.oscillator.connect(this.output);
     // stereo panning
@@ -131,22 +129,13 @@ define(function (require) {
         this.oscillator = undefined;
       }
 
-      // var detune = this.oscillator.frequency.value;
       this.oscillator = p5sound.audiocontext.createOscillator();
-      this.oscillator.frequency.value = Math.abs(freq);
+      AudioParamUtils.setExponentialValue(this.oscillator.frequency, Math.abs(freq));
       this.oscillator.type = type;
-      // this.oscillator.detune.value = detune;
+
       this.oscillator.connect(this.output);
       time = time || 0;
       this.oscillator.start(time + p5sound.audiocontext.currentTime);
-      this.freqNode = this.oscillator.frequency;
-
-      // if other oscillators are already connected to this osc's freq
-      for (var i in this._freqMods) {
-        if (typeof this._freqMods[i].connect !== 'undefined') {
-          this._freqMods[i].connect(this.oscillator.frequency);
-        }
-      }
 
       this.started = true;
     }
@@ -186,20 +175,8 @@ define(function (require) {
    *                              gain/amplitude/volume)
    */
   p5.Oscillator.prototype.amp = function(vol, rampTime, tFromNow) {
-    var self = this;
-    if (typeof vol === 'number') {
-      var rampTime = rampTime || 0;
-      var tFromNow = tFromNow || 0;
-      var now = p5sound.audiocontext.currentTime;
-      this.output.gain.linearRampToValueAtTime(vol, now + tFromNow + rampTime);
-    }
-
-    else if (vol) {
-      vol.connect(self.output.gain);
-    } else {
-      // return the Gain Node
-      return this.output.gain;
-    }
+    AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
+    return this.output.gain;
   };
 
   // these are now the same thing
@@ -231,43 +208,8 @@ define(function (require) {
    *  </code></div>
    */
   p5.Oscillator.prototype.freq = function(val, rampTime, tFromNow) {
-    if (typeof val === 'number' && !isNaN(val)) {
-      this.f = val;
-      var now = p5sound.audiocontext.currentTime;
-      var rampTime = rampTime || 0;
-      var tFromNow = tFromNow || 0;
-      var t = now + tFromNow + rampTime;
-      // var currentFreq = this.oscillator.frequency.value;
-      // this.oscillator.frequency.cancelScheduledValues(now);
-
-      if (rampTime === 0) {
-        this.oscillator.frequency.setValueAtTime(val, tFromNow + now);
-      } else {
-        if (val > 0 ) {
-          this.oscillator.frequency.exponentialRampToValueAtTime(val, tFromNow + rampTime + now);
-        } else {
-          this.oscillator.frequency.linearRampToValueAtTime(val, tFromNow + rampTime + now);
-        }
-      }
-
-      // reset phase if oscillator has a phase
-      if (this.phaseAmount) {
-        this.phase(this.phaseAmount);
-      }
-
-    } else if (val) {
-      if (val.output) {
-        val = val.output;
-      }
-      val.connect(this.oscillator.frequency);
-
-      // keep track of what is modulating this param
-      // so it can be re-connected if
-      this._freqMods.push( val );
-    } else {
-      // return the Frequency Node
-      return this.oscillator.frequency;
-    }
+    AudioParamUtils.setExponentialValue(this.oscillator.frequency, val, rampTime, tFromNow);
+    return this.oscillator.frequency;
   };
 
   p5.Oscillator.prototype.getFreq = function() {
@@ -317,7 +259,6 @@ define(function (require) {
     this.output.disconnect();
     this.panner.disconnect();
     this.output.connect(this.panner);
-    this.oscMods = [];
   };
 
   /**
@@ -563,4 +504,5 @@ define(function (require) {
 
   p5.SqrOsc.prototype = Object.create(p5.Oscillator.prototype);
 
+  return p5.Oscillator;
 });

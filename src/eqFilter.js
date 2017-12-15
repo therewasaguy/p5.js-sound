@@ -3,6 +3,7 @@
 define(function (require) {
   var Filter = require('filter');
   var p5sound = require('master');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  EQFilter extends p5.Filter with constraints
@@ -14,7 +15,7 @@ define(function (require) {
     Filter.call(this, 'peaking');
     this.disconnect();
     this.set(freq, res);
-    this.biquad.gain.value = 0;
+    AudioParamUtils.setValue(this.biquad.gain.value, 0);
     delete this.input;
     delete this.output;
     delete this._drywet;

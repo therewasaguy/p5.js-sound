@@ -3,6 +3,7 @@
 define(function (require) {
   var Filter = require('filter');
   var Effect = require('effect');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  Delay is an echo effect. It processes an existing sound source,
@@ -89,10 +90,10 @@ define(function (require) {
     this._leftFilter.disconnect();
     this._rightFilter.disconnect();
 
-    this._leftFilter.biquad.frequency.setValueAtTime(1200, this.ac.currentTime);
-    this._rightFilter.biquad.frequency.setValueAtTime(1200, this.ac.currentTime);
-    this._leftFilter.biquad.Q.setValueAtTime(0.3, this.ac.currentTime);
-    this._rightFilter.biquad.Q.setValueAtTime(0.3, this.ac.currentTime);
+    AudioParamUtils.setExponentialValue(this._leftFilter.biquad.frequency, 1200);
+    AudioParamUtils.setExponentialValue(this._rightFilter.biquad.frequency, 1200);
+    AudioParamUtils.setExponentialValue(this._leftFilter.biquad.Q, 0.3);
+    AudioParamUtils.setExponentialValue(this._rightFilter.biquad.Q, 0.3);
 
     // graph routing
     this.input.connect(this._split);
@@ -102,9 +103,8 @@ define(function (require) {
     this._rightGain.connect(this._rightFilter.input);
     this._merge.connect(this.wet);
 
-
-    this._leftFilter.biquad.gain.setValueAtTime(1, this.ac.currentTime);
-    this._rightFilter.biquad.gain.setValueAtTime(1, this.ac.currentTime);
+    AudioParamUtils.setValue(this._leftFilter.biquad.gain, 1);
+    AudioParamUtils.setValue(this._rightFilter.biquad.gain, 1);
 
     // default routing
     this.setType(0);
@@ -113,8 +113,6 @@ define(function (require) {
 
     // set initial feedback to 0.5
     this.feedback(0.5);
-
-
   };
 
   p5.Delay.prototype = Object.create(Effect.prototype);
@@ -145,10 +143,10 @@ define(function (require) {
     }
 
     src.connect(this.input);
-    this.leftDelay.delayTime.setValueAtTime(delayTime, this.ac.currentTime);
-    this.rightDelay.delayTime.setValueAtTime(delayTime, this.ac.currentTime);
-    this._leftGain.gain.value = feedback;
-    this._rightGain.gain.value = feedback;
+    AudioParamUtils.setValue(this.leftDelay.delayTime, delayTime);
+    AudioParamUtils.setValue(this.rightDelay.delayTime, delayTime);
+    AudioParamUtils.setValue(this._leftGain.gain, feedback);
+    AudioParamUtils.setValue(this._rightGain.gain, feedback);
 
     if (_filter) {
       this._leftFilter.freq(_filter);
@@ -171,10 +169,7 @@ define(function (require) {
     }
 
     else {
-      this.leftDelay.delayTime.cancelScheduledValues(this.ac.currentTime);
-      this.rightDelay.delayTime.cancelScheduledValues(this.ac.currentTime);
-      this.leftDelay.delayTime.linearRampToValueAtTime(t, this.ac.currentTime);
-      this.rightDelay.delayTime.linearRampToValueAtTime(t, this.ac.currentTime);
+      AudioParamUtils.setValue(this.leftDelay.delayTime, t);
     }
   };
 
@@ -202,8 +197,8 @@ define(function (require) {
       throw new Error('Feedback value will force a positive feedback loop.');
     }
     else if (typeof f === 'number') {
-      this._leftGain.gain.value = f;
-      this._rightGain.gain.value = f;
+      AudioParamUtils.setValue(this._leftGain.gain, f);
+      AudioParamUtils.setValue(this._rightGain.gain, f);
     }
 
     // return value of feedback

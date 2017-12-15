@@ -75,7 +75,7 @@ define(function (require) {
 
 
     this.processor.connect(this.output);
-    this.output.gain.value = 0;
+    this.output.gain.setValueAtTime(0, this.audiocontext.currentTime);
 
     // this may only be necessary because of a Chrome bug
     this.output.connect(this.audiocontext.destination);

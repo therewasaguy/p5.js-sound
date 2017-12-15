@@ -2,6 +2,7 @@
 
 define(function (require) {
   var p5sound = require('master');
+  var AudioParamUtils = require('utils/audioParam');
 
   // an array of input sources
   p5sound.inputSources = [];
@@ -208,19 +209,11 @@ define(function (require) {
    *
    *  @method  amp
    *  @param  {Number} vol between 0 and 1.0
-   *  @param {Number} [time] ramp time (optional)
+   *  @param {Number} [rampTime] ramp time in seconds (optional)
+   *  @param {Number} [timeFromNow] in seconds (optional)
    */
-  p5.AudioIn.prototype.amp = function(vol, t) {
-    if (t) {
-      var rampTime = t || 0;
-      var currentVol = this.output.gain.value;
-      this.output.gain.cancelScheduledValues(p5sound.audiocontext.currentTime);
-      this.output.gain.setValueAtTime(currentVol, p5sound.audiocontext.currentTime);
-      this.output.gain.linearRampToValueAtTime(vol, rampTime + p5sound.audiocontext.currentTime);
-    } else {
-      this.output.gain.cancelScheduledValues(p5sound.audiocontext.currentTime);
-      this.output.gain.setValueAtTime(vol, p5sound.audiocontext.currentTime);
-    }
+  p5.AudioIn.prototype.amp = function(vol, rampTime, timeFromNow) {
+    return AudioParamUtils.setValue(this.output.gain, vol, rampTime, timeFromNow);
   };
 
   /**

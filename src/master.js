@@ -1,6 +1,7 @@
 'use strict';
 
 define(function () {
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    * Master contains AudioContext and the master sound output.
@@ -12,8 +13,8 @@ define(function () {
 
     //put a hard limiter on the output
     this.limiter = audiocontext.createDynamicsCompressor();
-    this.limiter.threshold.value = 0;
-    this.limiter.ratio.value = 20;
+    AudioParamUtils.setValue(this.limiter.threshold, 0);
+    AudioParamUtils.setValue(this.limiter.ratio, 20);
 
     this.audiocontext = audiocontext;
 
@@ -85,21 +86,7 @@ define(function () {
    *                                 t seconds in the future
    */
   p5.prototype.masterVolume = function(vol, rampTime, tFromNow) {
-    if (typeof vol === 'number') {
-      var rampTime = rampTime || 0;
-      var tFromNow = tFromNow || 0;
-      var now = p5sound.audiocontext.currentTime;
-      var currentVol = p5sound.output.gain.value;
-      p5sound.output.gain.cancelScheduledValues(now + tFromNow);
-      p5sound.output.gain.linearRampToValueAtTime(currentVol, now + tFromNow);
-      p5sound.output.gain.linearRampToValueAtTime(vol, now + tFromNow + rampTime);
-    }
-    else if (vol) {
-      vol.connect(p5sound.output.gain);
-    } else {
-      // return the Gain Node
-      return p5sound.output.gain;
-    }
+    return AudioParamUtils.setValue(p5sound.output.gain, vol, tFromNow, rampTime);
   };
 
   /**
@@ -120,9 +107,8 @@ define(function () {
    *  @private
    */
   p5.soundOut._silentNode = p5sound.audiocontext.createGain();
-  p5.soundOut._silentNode.gain.value = 0;
+  AudioParamUtils.setValue(p5.soundOut._silentNode.gain, 0);
   p5.soundOut._silentNode.connect(p5sound.audiocontext.destination);
-
 
   return p5sound;
 });

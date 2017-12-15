@@ -1,9 +1,8 @@
-define(function (require) {
-	'use strict';
+'use strict';
 
-	var p5sound = require('master');
-	var Effect = require('effect');
-  var CustomError = require('errorHandler');
+define(function (require) {
+  var Effect = require('effect');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    * Compressor is an audio effect class that performs dynamics compression
@@ -26,26 +25,24 @@ define(function (require) {
    *
    * 
    */
-	p5.Compressor = function() {
-		Effect.call(this);
+  p5.Compressor = function() {
+    Effect.call(this);
 
     /**
      * The p5.Compressor is built with a <a href="https://www.w3.org/TR/webaudio/#the-dynamicscompressornode-interface" 
-   *   target="_blank" title="W3 spec for Dynamics Compressor Node">Web Audio Dynamics Compressor Node
-   *   </a>
+     *   target="_blank" title="W3 spec for Dynamics Compressor Node">Web Audio Dynamics Compressor Node
+     *   </a>
      * @property {AudioNode} compressor 
      */
-    
-
-		this.compressor = this.ac.createDynamicsCompressor();
+    this.compressor = this.ac.createDynamicsCompressor();
 
     this.input.connect(this.compressor);
     this.compressor.connect(this.wet);
-	};
+  };
 
-	p5.Compressor.prototype = Object.create(Effect.prototype);
+  p5.Compressor.prototype = Object.create(Effect.prototype);
 
- /**
+  /**
   * Performs the same function as .connect, but also accepts
   * optional parameters to set compressor's audioParams
   * @method process 
@@ -64,11 +61,10 @@ define(function (require) {
   * @param {Number} [release]    The amount of time (in seconds) to increase the gain by 10dB
   *                            default = .25, range 0 - 1
   */
-	p5.Compressor.prototype.process = function(src, attack, knee, 
-                                      ratio, threshold, release) {
-		src.connect(this.input);
-		this.set(attack, knee, ratio, threshold, release);
-	};
+  p5.Compressor.prototype.process = function(src, attack, knee, ratio, threshold, release) {
+    src.connect(this.input);
+    this.set(attack, knee, ratio, threshold, release);
+  };
 
   /**
    * Set the paramters of a compressor. 
@@ -85,8 +81,7 @@ define(function (require) {
    * @param {Number} release    The amount of time (in seconds) to increase the gain by 10dB
    *                            default = .25, range 0 - 1
    */
-  p5.Compressor.prototype.set = function (attack, knee, 
-                                ratio, threshold, release) {
+  p5.Compressor.prototype.set = function (attack, knee, ratio, threshold, release) {
 
     if (typeof attack !== 'undefined') {this.attack(attack);}
     if (typeof knee !== 'undefined') {this.knee(knee);}
@@ -103,40 +98,26 @@ define(function (require) {
    * @method attack
    * @param {Number} [attack] Attack is the amount of time (in seconds) to reduce the gain by 10dB,
    *                          default = .003, range 0 - 1
-   * @param {Number} [time]  Assign time value to schedule the change in value
+   * @param {Number} [rampTime]  Ramp to this value over time.
+   * @param {Number} [timeFromNow]  Assign time value to schedule the change in value
    */
-  p5.Compressor.prototype.attack = function (attack, time){
-    var t = time || 0;
-    if (typeof attack == 'number'){
-      this.compressor.attack.value = attack;
-      this.compressor.attack.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.compressor.attack.linearRampToValueAtTime(attack, this.ac.currentTime + 0.02 + t);
-    } else if (typeof attack !== 'undefined') {
-        attack.connect(this.compressor.attack);
-    }
-    return this.compressor.attack.value;
+  p5.Compressor.prototype.attack = function (attack, rampTime, timeFromNow) {
+    return AudioParamUtils.setValue(this.compressor.attack, attack, rampTime, timeFromNow);
   };
 
 
- /**
+  /**
    * Get current knee or set value w/ time ramp
    * 
    * @method knee
    * @param {Number} [knee] A decibel value representing the range above the 
    *                        threshold where the curve smoothly transitions to the "ratio" portion.
    *                        default = 30, range 0 - 40
-   * @param {Number} [time]  Assign time value to schedule the change in value
+   * @param {Number} [rampTime]  Ramp to this value over time.
+   * @param {Number} [timeFromNow]  Assign time value to schedule the change in value
    */
-  p5.Compressor.prototype.knee = function (knee, time){
-    var t = time || 0;
-    if (typeof knee == 'number'){
-      this.compressor.knee.value = knee;
-      this.compressor.knee.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.compressor.knee.linearRampToValueAtTime(knee, this.ac.currentTime + 0.02 + t);
-    } else if (typeof knee !== 'undefined') {
-        knee.connect(this.compressor.knee);
-    }
-    return this.compressor.knee.value;
+  p5.Compressor.prototype.knee = function (knee, rampTime, timeFromNow) {
+    return AudioParamUtils.setValue(this.compressor.knee, knee, rampTime, timeFromNow);
   };
 
 
@@ -146,18 +127,11 @@ define(function (require) {
    *
    * @param {Number} [ratio]      The amount of dB change in input for a 1 dB change in output
    *                            default = 12, range 1 - 20 
-   * @param {Number} [time]  Assign time value to schedule the change in value
+   * @param {Number} [rampTime]  Ramp to this value over time.
+   * @param {Number} [timeFromNow]  Assign time value to schedule the change in value
    */
-  p5.Compressor.prototype.ratio = function (ratio, time){
-    var t = time || 0;
-    if (typeof ratio == 'number'){
-      this.compressor.ratio.value = ratio;
-      this.compressor.ratio.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.compressor.ratio.linearRampToValueAtTime(ratio, this.ac.currentTime + 0.02 + t);
-    } else if (typeof ratio !== 'undefined') {
-        ratio.connect(this.compressor.ratio);
-    }
-    return this.compressor.ratio.value;
+  p5.Compressor.prototype.ratio = function (ratio, rampTime, timeFromNow) {
+    return AudioParamUtils.setValue(this.compressor.ratio, ratio, timeFromNow, rampTime);
   };
 
 
@@ -167,18 +141,11 @@ define(function (require) {
    *
    * @param {Number} threshold  The decibel value above which the compression will start taking effect
    *                            default = -24, range -100 - 0
-   * @param {Number} [time]  Assign time value to schedule the change in value
+   * @param {Number} [rampTime]  Ramp to this value over time.
+   * @param {Number} [timeFromNow]  Assign time value to schedule the change in value
    */
-  p5.Compressor.prototype.threshold = function (threshold, time){
-    var t = time || 0;
-    if (typeof threshold == 'number'){
-      this.compressor.threshold.value = threshold;
-      this.compressor.threshold.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.compressor.threshold.linearRampToValueAtTime(threshold, this.ac.currentTime + 0.02 + t);
-    } else if (typeof threshold !== 'undefined') {
-        threshold.connect(this.compressor.threshold);
-    }
-    return this.compressor.threshold.value;
+  p5.Compressor.prototype.threshold = function (threshold, rampTime, timeFromNow) {
+    return AudioParamUtils.setValue(this.compressor.threshold, threshold, rampTime, timeFromNow);
   };
 
 
@@ -189,18 +156,11 @@ define(function (require) {
    * @param {Number} release    The amount of time (in seconds) to increase the gain by 10dB
    *                            default = .25, range 0 - 1
    *
-   * @param {Number} [time]  Assign time value to schedule the change in value
+   * @param {Number} [rampTime]  Ramp to this value over time.
+   * @param {Number} [timeFromNow]  Assign time value to schedule the change in value
    */
-  p5.Compressor.prototype.release = function (release, time){
-    var t = time || 0;
-    if (typeof release == 'number'){
-      this.compressor.release.value = release;
-      this.compressor.release.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.compressor.release.linearRampToValueAtTime(release, this.ac.currentTime + 0.02 + t);
-    } else if (typeof number !== 'undefined') {
-        release.connect(this.compressor.release);
-    }
-    return this.compressor.release.value;
+  p5.Compressor.prototype.release = function (release, rampTime, timeFromNow) {
+    return AudioParamUtils.setValue(this.compressor.release, release, rampTime, timeFromNow);
   };
 
   /**
@@ -214,11 +174,11 @@ define(function (require) {
   };
 
 
-	p5.Compressor.prototype.dispose = function() {
-		Effect.prototype.dispose.apply(this);
-		this.compressor.disconnect();
-		this.compressor = undefined;
-	};
+  p5.Compressor.prototype.dispose = function() {
+    Effect.prototype.dispose.apply(this);
+    this.compressor.disconnect();
+    this.compressor = undefined;
+  };
 
   return p5.Compressor;
 });

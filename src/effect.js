@@ -3,6 +3,7 @@ define(function (require) {
 
 	var p5sound = require('master');
 	var CrossFade = require('Tone/component/CrossFade');
+  var AudioParamUtils = require('utils/audioParam');
 
 	/**
 	 * Effect is a base class for audio effects in p5. <br>
@@ -67,13 +68,7 @@ define(function (require) {
 	 *  @param {Number} [tFromNow] schedule this event to happen in tFromNow seconds
 	 */
 	p5.Effect.prototype.amp = function(vol, rampTime, tFromNow){
-	  var rampTime = rampTime || 0;
-	  var tFromNow = tFromNow || 0;
-	  var now = p5sound.audiocontext.currentTime;
-	  var currentVol = this.output.gain.value;
-	  this.output.gain.cancelScheduledValues(now);
-	  this.output.gain.linearRampToValueAtTime(currentVol, now + tFromNow + .001);
-	  this.output.gain.linearRampToValueAtTime(vol, now + tFromNow + rampTime + .001);
+		return AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
 	};
 
 	/**
@@ -101,8 +96,8 @@ define(function (require) {
 	 *	@param {Number} [fade] The desired drywet value (0 - 1.0)
 	 */
 	p5.Effect.prototype.drywet = function(fade){
-		if (typeof fade !=="undefined"){	
-			this._drywet.fade.value = fade
+		if (typeof fade !=="undefined"){
+			AudioParamUtils.setValue(this._drywet.fade, fade);
 		}
 		return this._drywet.fade.value;
 	};

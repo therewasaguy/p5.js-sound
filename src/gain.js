@@ -2,7 +2,7 @@
 
 define(function (require) {
   var p5sound = require('master');
-  require('sndcore');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  A gain node is usefull to set the relative volume of sound.
@@ -77,7 +77,7 @@ define(function (require) {
     this.output = this.ac.createGain();
 
     // otherwise, Safari distorts
-    this.input.gain.value = 0.5;
+    AudioParamUtils.setValue(this.input.gain, 0.5);
     this.input.connect(this.output);
 
     // add  to the soundArray
@@ -127,13 +127,7 @@ define(function (require) {
    *                                seconds from now
    */
   p5.Gain.prototype.amp = function(vol, rampTime, tFromNow) {
-    var rampTime = rampTime || 0;
-    var tFromNow = tFromNow || 0;
-    var now = p5sound.audiocontext.currentTime;
-    var currentVol = this.output.gain.value;
-    this.output.gain.cancelScheduledValues(now);
-    this.output.gain.linearRampToValueAtTime(currentVol, now + tFromNow);
-    this.output.gain.linearRampToValueAtTime(vol, now + tFromNow + rampTime);
+    AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
   };
 
   p5.Gain.prototype.dispose = function() {

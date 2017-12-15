@@ -3,7 +3,8 @@
 define(function (require) {
 
   var p5sound = require('master');
-  require('oscillator');
+  var p5Oscillator = require('oscillator');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  Creates a Pulse object, an oscillator that implements
@@ -41,7 +42,7 @@ define(function (require) {
    *  </code></div>
    */
   p5.Pulse = function(freq, w) {
-    p5.Oscillator.call(this, freq, 'sawtooth');
+    p5Oscillator.call(this, freq, 'sawtooth');
 
     // width of PWM, should be betw 0 to 1.0
     this.w = w || 0;
@@ -74,7 +75,7 @@ define(function (require) {
     this.output.connect(this.panner);
   };
 
-  p5.Pulse.prototype = Object.create(p5.Oscillator.prototype);
+  p5.Pulse.prototype = Object.create(p5Oscillator.prototype);
 
   /**
    *  Set the width of a Pulse object (an oscillator that implements
@@ -154,30 +155,10 @@ define(function (require) {
   };
 
   p5.Pulse.prototype.freq = function(val, rampTime, tFromNow) {
-    if (typeof val === 'number') {
-      this.f = val;
-      var now = p5sound.audiocontext.currentTime;
-      var rampTime = rampTime || 0;
-      var tFromNow = tFromNow || 0;
-      var currentFreq = this.oscillator.frequency.value;
-      this.oscillator.frequency.cancelScheduledValues(now);
-      this.oscillator.frequency.setValueAtTime(currentFreq, now + tFromNow);
-      this.oscillator.frequency.exponentialRampToValueAtTime(val, tFromNow + rampTime + now);
-      this.osc2.oscillator.frequency.cancelScheduledValues(now);
-      this.osc2.oscillator.frequency.setValueAtTime(currentFreq, now + tFromNow);
-      this.osc2.oscillator.frequency.exponentialRampToValueAtTime(val, tFromNow + rampTime + now);
-
-      if (this.freqMod) {
-        this.freqMod.output.disconnect();
-        this.freqMod = null;
-      }
-
-    } else if (val.output) {
-      val.output.disconnect();
-      val.output.connect(this.oscillator.frequency);
-      val.output.connect(this.osc2.oscillator.frequency);
-      this.freqMod = val;
-    }
+    var param1 = this.oscillator.frequency;
+    var param2 = this.osc2.oscillator.frequency;
+    AudioParamUtils.setExponentialValue(param1, val, rampTime, tFromNow);
+    return AudioParamUtils.setExponentialValue(param2, val, rampTime, tFromNow);
   };
 
   // inspiration: http://webaudiodemos.appspot.com/oscilloscope/

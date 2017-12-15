@@ -1,8 +1,8 @@
 'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
   var Effect = require('effect');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  <p>A p5.Filter uses a Web Audio Biquad Filter to filter
@@ -120,10 +120,12 @@ define(function (require) {
    *  @param {Number} [freq] Frequency in Hz, from 10 to 22050
    *  @param {Number} [res] Resonance/Width of the filter frequency
    *                        from 0.001 to 1000
+   *  @param {Number} [rampTime] Seconds to ramp the value change
+   *  @param {Number} [timeFromNow] when this even will begin (in seconds)
    */
-  p5.Filter.prototype.process = function(src, freq, res, time) {
+  p5.Filter.prototype.process = function(src, freq, res, rampTime, timeFromNow) {
     src.connect(this.input);
-    this.set(freq, res, time);
+    this.set(freq, res, rampTime, timeFromNow);
   };
 
 
@@ -133,15 +135,16 @@ define(function (require) {
    *  @method  set
    *  @param {Number} [freq] Frequency in Hz, from 10 to 22050
    *  @param {Number} [res]  Resonance (Q) from 0.001 to 1000
-   *  @param {Number} [timeFromNow] schedule this event to happen
-   *                                seconds from now
+   *  @param {Number} [rampTime] Seconds to ramp the value change
+   *  @param {Number} [timeFromNow] when this even will begin (in seconds)
+
    */
-  p5.Filter.prototype.set = function(freq, res, time) {
+  p5.Filter.prototype.set = function(freq, res, rampTime, timeFromNow) {
     if (freq) {
-      this.freq(freq, time);
+      this.freq(freq, rampTime, timeFromNow);
     }
     if (res) {
-      this.res(res, time);
+      this.res(res, rampTime, timeFromNow);
     }
   };
 
@@ -152,23 +155,13 @@ define(function (require) {
    *
    *  @method  freq
    *  @param  {Number} freq Filter Frequency
-   *  @param {Number} [timeFromNow] schedule this event to happen
+   *  @param {Number} [rampTime] Seconds to ramp the value change
+   *  @param {Number} [timeFromNow] schedule this event to begin
    *                                seconds from now
    *  @return {Number} value  Returns the current frequency value
    */
-  p5.Filter.prototype.freq = function(freq, time) {
-    var t = time || 0;
-    if (freq <= 0) {
-      freq = 1;
-    }
-    if (typeof freq === 'number') {
-      this.biquad.frequency.value = freq;
-      this.biquad.frequency.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.biquad.frequency.exponentialRampToValueAtTime(freq, this.ac.currentTime + 0.02 + t);
-    } else if (freq) {
-      freq.connect(this.biquad.frequency);
-    }
-    return this.biquad.frequency.value;
+  p5.Filter.prototype.freq = function(freq, rampTime, timeFromNow) {
+    return AudioParamUtils.setExponentialValue(this.biquad.frequency, freq, rampTime, timeFromNow);
   };
 
   /**
@@ -178,20 +171,13 @@ define(function (require) {
    *  @method  res
    *  @param {Number} res  Resonance/Width of filter freq
    *                       from 0.001 to 1000
-   *  @param {Number} [timeFromNow] schedule this event to happen
+   *  @param {Number} [rampTime] Seconds to ramp the value change
+   *  @param {Number} [timeFromNow] schedule this event to begin
    *                                seconds from now
    *  @return {Number} value Returns the current res value
    */
-  p5.Filter.prototype.res = function(res, time) {
-    var t = time || 0;
-    if (typeof res === 'number') {
-      this.biquad.Q.value = res;
-      this.biquad.Q.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.biquad.Q.linearRampToValueAtTime(res, this.ac.currentTime + 0.02 + t);
-    } else if (res) {
-      res.connect(this.biquad.Q);
-    }
-    return this.biquad.Q.value;
+  p5.Filter.prototype.res = function(res, rampTime, timeFromNow) {
+    return AudioParamUtils.setExponentialValue(this.biquad.Q, res, rampTime, timeFromNow);
   };
 
   /**
@@ -202,18 +188,13 @@ define(function (require) {
    *
    * @method gain
    * @param  {Number} gain 
+   *  @param {Number} [rampTime] Seconds to ramp the value change
+   *  @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Number} Returns the current or updated gain value
    */
-  p5.Filter.prototype.gain = function(gain, time) {
-    var t = time || 0;
-    if (typeof gain === 'number') {
-      this.biquad.gain.value = gain;
-      this.biquad.gain.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.biquad.gain.linearRampToValueAtTime(gain, this.ac.currentTime + 0.02 + t);
-    } else if (gain) {
-      gain.connect(this.biquad.gain);
-    }
-    return this.biquad.gain.value;
+  p5.Filter.prototype.gain = function(gain, rampTime, timeFromNow) {
+    return AudioParamUtils.setExponentialValue(this.biquad.gain, gain, rampTime, timeFromNow);
   };
 
 
@@ -225,7 +206,7 @@ define(function (require) {
    */
   p5.Filter.prototype.toggle = function() {
     this._on = !this._on;
-    
+
     if (this._on === true) {
       this.biquad.type = this._untoggledType;
     } else if (this._on === false) {
@@ -233,7 +214,7 @@ define(function (require) {
     }
 
     return this._on;
-  }
+  };
 
   /**
    *  Set the type of a p5.Filter. Possible types include:
