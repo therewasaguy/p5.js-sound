@@ -4,7 +4,6 @@ define(function (require) {
 
   var p5sound = require('master');
   var p5Oscillator = require('oscillator');
-  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  Creates a Pulse object, an oscillator that implements
@@ -58,8 +57,8 @@ define(function (require) {
     this.dcGain = p5sound.audiocontext.createGain();
     this.dcOffset.connect(this.dcGain);
     this.dcGain.connect(this.output);
+
     // set delay time based on PWM width
-    this.f = freq || 440;
     var mW = this.w / this.oscillator.frequency.value;
     this.dNode.delayTime.value = mW;
     this.dcGain.gain.value = 1.7*(0.5-this.w);
@@ -125,18 +124,12 @@ define(function (require) {
       this.osc2.oscillator.type = type;
       this.osc2.oscillator.connect(this.osc2.output);
       this.osc2.start(t + now);
-      this.freqNode = [this.oscillator.frequency, this.osc2.oscillator.frequency];
 
       // start dcOffset, too
       this.dcOffset = createDCOffset();
       this.dcOffset.connect(this.dcGain);
       this.dcOffset.start(t + now);
 
-      // if LFO connections depend on these oscillators
-      if (this.mods !== undefined && this.mods.frequency !== undefined) {
-        this.mods.frequency.connect(this.freqNode[0]);
-        this.mods.frequency.connect(this.freqNode[1]);
-      }
       this.started = true;
       this.osc2.started = true;
     }
@@ -155,10 +148,9 @@ define(function (require) {
   };
 
   p5.Pulse.prototype.freq = function(val, rampTime, tFromNow) {
-    var param1 = this.oscillator.frequency;
-    var param2 = this.osc2.oscillator.frequency;
-    AudioParamUtils.setExponentialValue(param1, val, rampTime, tFromNow);
-    return AudioParamUtils.setExponentialValue(param2, val, rampTime, tFromNow);
+    p5Oscillator.prototype.freq.call(this, val, rampTime, tFromNow);
+    p5Oscillator.prototype.freq.call(this.osc2, val, rampTime, tFromNow);
+    return this.f;
   };
 
   // inspiration: http://webaudiodemos.appspot.com/oscilloscope/

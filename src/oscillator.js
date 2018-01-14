@@ -86,7 +86,19 @@ define(function (require) {
     this.oscillator = p5sound.audiocontext.createOscillator();
     this.output = p5sound.audiocontext.createGain();
 
-    this.f = freq || 440.0; // frequency
+    this._targetFreq = freq || 440;
+    Object.defineProperties(this, {
+      'f': {
+        get: function() {
+          console.log('freq getta');
+          if (typeof this._targetFreq === 'number') {
+            return this._targetFreq;
+          } else {
+            return this.oscillator.frequency.value;
+          }
+        }
+      }
+    });
     this.oscillator.type = type || 'sine';
     AudioParamUtils.setValue(this.oscillator.frequency, this.f);
     // set default output gain to 0.5
@@ -208,6 +220,7 @@ define(function (require) {
    *  </code></div>
    */
   p5.Oscillator.prototype.freq = function(val, rampTime, tFromNow) {
+    this._targetFreq = val;
     AudioParamUtils.setExponentialValue(this.oscillator.frequency, val, rampTime, tFromNow);
     return this.oscillator.frequency;
   };
