@@ -7,6 +7,7 @@
 
 var ball;
 var soundFile;
+var panning;
 
 function preload() {
   soundFormats('mp3', 'ogg');
@@ -31,21 +32,24 @@ function draw() {
 
   ball.x += ball.speed;
 
+  panning = constrain(map(ball.x, 0, width, -1, 1), -1, 1);
 
   // when the ball hits the wall...
   if (ball.x > width || ball.x < 0) {
 
     // map the ball's x location to a panning degree (float between -1.0 and 1.0)
-    var panning = map(ball.x, 0, width, -1, 1);
     soundFile.pan(panning);
 
     // set a random playback speed for the sound
     var newSpeed = random(1);
     ball.speed = -ball.speed;
-    soundFile.rate(newSpeed);
+    // soundFile.rate(newSpeed);
 
     // play the sound
     soundFile.play();
   }
   ellipse(ball.x, ball.y, 100, 100);
+  fill(255)
+  text('pan ' + soundFile.pan() , 20, 20);
+  text('desired ' + panning, 20, 40);
 }
