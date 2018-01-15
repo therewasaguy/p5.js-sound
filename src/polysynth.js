@@ -1,10 +1,7 @@
 'use strict';
 define(function (require) {
-
-
   var p5sound = require('master');
   var TimelineSignal = require('Tone/signal/TimelineSignal');
-  require('sndcore');
 
   /**
     *  An AudioVoice is used as a single voice for sound synthesis.
@@ -136,7 +133,7 @@ define(function (require) {
   p5.PolySynth.prototype.noteADSR = function (note,a,d,s,r,timeFromNow) {
     var now = p5sound.audiocontext.currentTime;
     var timeFromNow = timeFromNow || 0;
-    var t = now + timeFromNow
+    var t = now + timeFromNow;
     this.audiovoices[ this.notes[note].getValueAtTime(t) ].setADSR(a,d,s,r);
   };
 
@@ -277,16 +274,13 @@ define(function (require) {
     var note = typeof _note === 'string' ? this.AudioVoice.prototype._setNote(_note)
       : typeof _note === 'number' ? _note : this.audiovoices[this._newest].oscillator.freq().value;
 
-      var now =  p5sound.audiocontext.currentTime;
-      var tFromNow = secondsFromNow || 0;
-      var t = now + tFromNow;
+    var now =  p5sound.audiocontext.currentTime;
+    var tFromNow = secondsFromNow || 0;
+    var t = now + tFromNow;
 
-    
     if (this.notes[note].getValueAtTime(t) === null) {
       console.warn('Cannot release a note that is not already playing');
     } else {
-      
-
       //Find the scheduled change in this._voicesInUse that will be previous to this new note
       //subtract 1 and schedule this value at time 't', when this note will stop playing
       var previousVal = this._voicesInUse._searchBefore(t) === null ? 0 : this._voicesInUse._searchBefore(t).value;
@@ -295,7 +289,6 @@ define(function (require) {
       this._updateAfter(t, -1);
 
       this.audiovoices[ this.notes[note].getValueAtTime(t) ].triggerRelease(tFromNow);
-      
       this.notes[note].setValueAtTime( null, t);
 
       this._newest = this._newest === 0 ? 0 : (this._newest - 1) % (this.polyValue - 1);
