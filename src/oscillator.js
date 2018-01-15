@@ -141,7 +141,7 @@ define(function (require) {
       }
 
       this.oscillator = p5sound.audiocontext.createOscillator();
-      AudioParamUtils.setExponentialValue(this.oscillator.frequency, Math.abs(freq));
+      AudioParamUtils.setValue(this.oscillator.frequency, Math.abs(freq));
       this.oscillator.type = type;
 
       this.oscillator.connect(this.output);
@@ -180,14 +180,10 @@ define(function (require) {
    *  @param {Number} [timeFromNow] schedule this event to happen
    *                                seconds from now
    *  @return  {AudioParam} gain  If no value is provided,
-   *                              returns the Web Audio API
-   *                              AudioParam that controls
-   *                              this oscillator's
-   *                              gain/amplitude/volume)
+   *                              returns the amplitude value
    */
   p5.Oscillator.prototype.amp = function(vol, rampTime, tFromNow) {
-    AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
-    return this.output.gain;
+    return AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
   };
 
   // these are now the same thing
@@ -207,10 +203,8 @@ define(function (require) {
    *  @param  {Number} [rampTime] Ramp time (in seconds)
    *  @param  {Number} [timeFromNow] Schedule this event to happen
    *                                   at x seconds from now
-   *  @return  {AudioParam} Frequency If no value is provided,
-   *                                  returns the Web Audio API
-   *                                  AudioParam that controls
-   *                                  this oscillator's frequency
+   *  @return  {Number} Frequency If no value is provided,
+   *                                  returns the frequency value
    *  @example
    *  <div><code>
    *  var osc = new p5.Oscillator(300);
@@ -220,8 +214,7 @@ define(function (require) {
    */
   p5.Oscillator.prototype.freq = function(val, rampTime, tFromNow) {
     this._targetFreq = val;
-    AudioParamUtils.setExponentialValue(this.oscillator.frequency, val, rampTime, tFromNow);
-    return this.oscillator.frequency;
+    return AudioParamUtils.setExponentialValue(this.oscillator.frequency, val, rampTime, tFromNow);
   };
 
   p5.Oscillator.prototype.getFreq = function() {
