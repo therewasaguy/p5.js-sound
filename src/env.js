@@ -9,7 +9,6 @@ define(function (require) {
   var TimelineSignal = require('Tone/signal/TimelineSignal');
 
   var Tone = require('Tone/core/Tone');
-  Tone.setContext( p5sound.audiocontext);
 
   /**
    *  <p>Envelopes are pre-defined amplitude distribution over time.
