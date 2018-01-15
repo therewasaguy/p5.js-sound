@@ -121,7 +121,6 @@ define(function (require) {
     this.startMillis = null;
 
     // stereo panning
-    this.panPosition = 0.0;
     this.panner = new p5.Panner(this.output, p5sound.input, 2);
 
     // it is possible to instantiate a soundfile with no path
@@ -354,9 +353,9 @@ define(function (require) {
       }
 
       //dont create another instance if already playing
-      if (this.mode === 'untildone' && this.isPlaying()){
+      if (this.mode === 'untildone' && this.isPlaying()) {
         return;
-      } 
+      }
 
       // make a new source and counter. They are automatically assigned playbackRate and buffer
       this.bufferSourceNode = this._initSourceNode();
@@ -690,9 +689,10 @@ define(function (require) {
    *  @method  setVolume
    *  @param {Number|Object} volume  Volume (amplitude) between 0.0
    *                                     and 1.0 or modulating signal/oscillator
-   *  @param {Number} [rampTime]  Fade for t seconds
-   *  @param {Number} [timeFromNow]  Schedule this event to happen at
-   *                                 t seconds in the future
+   * @param {Number} [rampTime]  seconds it will take to reach
+   *                             the desired value
+   * @param {Number} [timeFromNow]  schedule this event to begin
+   *                                 seconds from now
    */
   p5.SoundFile.prototype.setVolume = function(vol, _rampTime, _tFromNow) {
     if (typeof vol === 'number') {
@@ -729,7 +729,9 @@ define(function (require) {
    *
    * @method pan
    * @param {Number} [panValue]     Set the stereo panner
-   * @param {Number} [timeFromNow]  schedule this event to happen
+   * @param {Number} [rampTime]  seconds it will take to reach
+   *                             the desired value
+   * @param {Number} [timeFromNow]  schedule this event to begin
    *                                 seconds from now
    * @example
    * <div><code>
@@ -757,9 +759,8 @@ define(function (require) {
    *  }
    *  </div></code>
    */
-  p5.SoundFile.prototype.pan = function(pval, tFromNow) {
-    this.panPosition = pval;
-    this.panner.pan(pval, tFromNow);
+  p5.SoundFile.prototype.pan = function(pval, rampTime, tFromNow) {
+    return this.panner.pan(pval, rampTime, tFromNow);
   };
 
   /**
@@ -771,7 +772,7 @@ define(function (require) {
    *                          0.0 is center and default.
    */
   p5.SoundFile.prototype.getPan = function() {
-    return this.panPosition;
+    return this.panner.pan();
   };
 
   /**
@@ -1113,16 +1114,7 @@ define(function (require) {
    * @param {Object} [object] Audio object that accepts an input
    */
   p5.SoundFile.prototype.connect = function(unit) {
-    if (!unit) {
-      this.panner.connect(p5sound.input);
-    }
-    else {
-      if (unit.hasOwnProperty('input')) {
-        this.panner.connect(unit.input);
-      } else {
-        this.panner.connect(unit);
-      }
-    }
+    this.panner.connect(unit);
   };
 
   /**

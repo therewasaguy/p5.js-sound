@@ -4,6 +4,7 @@ define(function (require) {
 
   var p5sound = require('master');
   var p5Oscillator = require('oscillator');
+  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  Creates a Pulse object, an oscillator that implements
@@ -60,8 +61,8 @@ define(function (require) {
 
     // set delay time based on PWM width
     var mW = this.w / this.oscillator.frequency.value;
-    this.dNode.delayTime.value = mW;
-    this.dcGain.gain.value = 1.7*(0.5-this.w);
+    AudioParamUtils.setValue(this.dNode.delayTime, mW);
+    AudioParamUtils.setValue(this.dcGain.gain, 1.7*(0.5-this.w));
 
     // disconnect osc2 and connect it to delay, which is connected to output
     this.osc2.disconnect();
@@ -70,7 +71,7 @@ define(function (require) {
     this.osc2.output.connect(this.dNode);
     this.dNode.connect(this.output);
 
-    this.output.gain.value = 1;
+    AudioParamUtils.setValue(this.output.gain, 1);
     this.output.connect(this.panner);
   };
 
@@ -89,13 +90,11 @@ define(function (require) {
       if (w <= 1.0 && w >= 0.0) {
         this.w = w;
         // set delay time based on PWM width
-
-        // var mW = map(this.w, 0, 1.0, 0, 1/this.f);
         var mW = this.w / this.oscillator.frequency.value;
-        this.dNode.delayTime.value = mW;
+        AudioParamUtils.setValue(this.dNode.delayTime, mW);
       }
 
-      this.dcGain.gain.value = 1.7*(0.5-this.w);
+      AudioParamUtils.setValue(this.dcGain.gain, 1.7*(0.5-this.w));
     } else {
       w.connect(this.dNode.delayTime);
       var sig = new p5.SignalAdd(-0.5);

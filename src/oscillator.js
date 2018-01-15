@@ -90,7 +90,6 @@ define(function (require) {
     Object.defineProperties(this, {
       'f': {
         get: function() {
-          console.log('freq getta');
           if (typeof this._targetFreq === 'number') {
             return this._targetFreq;
           } else {
@@ -99,6 +98,7 @@ define(function (require) {
         }
       }
     });
+
     this.oscillator.type = type || 'sine';
     AudioParamUtils.setValue(this.oscillator.frequency, this.f);
     // set default output gain to 0.5
@@ -106,7 +106,6 @@ define(function (require) {
 
     this.oscillator.connect(this.output);
     // stereo panning
-    this.panPosition = 0.0;
     this.connection = p5sound.input; // connect to p5sound by default
     this.panner = new p5.Panner(this.output, this.connection, 1);
 
@@ -250,17 +249,7 @@ define(function (require) {
    *  @param  {Object} unit A p5.sound or Web Audio object
    */
   p5.Oscillator.prototype.connect = function(unit) {
-    if (!unit) {
-      this.panner.connect(p5sound.input);
-    }
-    else if (unit.hasOwnProperty('input')) {
-      this.panner.connect(unit.input);
-      this.connection = unit.input;
-    }
-    else {
-      this.panner.connect(unit);
-      this.connection = unit;
-    }
+    this.panner.connect(unit);
   };
 
   /**
@@ -279,16 +268,17 @@ define(function (require) {
    *
    *  @method  pan
    *  @param  {Number} panning Number between -1 and 1
-   *  @param  {Number} timeFromNow schedule this event to happen
-   *                                seconds from now
+   *  @param {Number} [rampTime] seconds it will take to reach
+   *                             the desired value
+   *  @param {Number} [timeFromNow]  schedule this event to begin
+   *                                 seconds from now
    */
-  p5.Oscillator.prototype.pan = function(pval, tFromNow) {
-    this.panPosition = pval;
-    this.panner.pan(pval, tFromNow);
+  p5.Oscillator.prototype.pan = function(pval, rampTime, tFromNow) {
+    return this.panner.pan(pval, rampTime, tFromNow);
   };
 
   p5.Oscillator.prototype.getPan = function() {
-    return this.panPosition;
+    return this.panner.pan();
   };
 
   // get rid of the oscillator
