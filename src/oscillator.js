@@ -176,10 +176,10 @@ define(function (require) {
    *  @method  amp
    *  @param  {Number|Object} vol between 0 and 1.0
    *                              or a modulating signal/oscillator
-   *  @param {Number} [rampTime] create a fade that lasts rampTime
+   *  @param {Number} [rampTime] create a fade that lasts rampTime in seconds
    *  @param {Number} [timeFromNow] schedule this event to happen
    *                                seconds from now
-   *  @return  {AudioParam} gain  If no value is provided,
+   *  @return  {Number} gain  If no value is provided,
    *                              returns the amplitude value
    */
   p5.Oscillator.prototype.amp = function(vol, rampTime, tFromNow) {
