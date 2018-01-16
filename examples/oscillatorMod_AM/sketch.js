@@ -32,11 +32,9 @@ function setup() {
   noFill();
 
   carrier = new p5.Oscillator(); // connects to master output by default
-  carrier.start();
   carrier.freq(340);
-  carrier.amp(0.2);
-  // carrier's amp is 0 by default, giving our modulator total control
-
+  carrier.amp(0); // carrier's amp is 0 by default, giving our modulator total control
+  carrier.start();
 
   modulator = new p5.Oscillator('triangle');
   modulator.disconnect();  // disconnect the modulator from master output
