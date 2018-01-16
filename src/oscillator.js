@@ -2,8 +2,7 @@
 
 define(function (require) {
   var p5sound = require('master');
-  var AudioParamUtils = require('utils/audioParam');
-
+  var SoundNode = require('./src/utils/SoundNode');
   var Add = require('Tone/signal/Add');
   var Mult = require('Tone/signal/Multiply');
   var Scale = require('Tone/signal/Scale');
@@ -68,41 +67,29 @@ define(function (require) {
    *  </code> </div>
    */
   p5.Oscillator = function(freq, type) {
+    SoundNode.call(this);
+
+    // parse args to allow for new backwards compatability i.e. p5.Oscillator("sawtooth")
     if (typeof freq === 'string') {
-      var f = type;
       type = freq;
-      freq = f;
-    } if (typeof type === 'number') {
-      var f = type;
-      type = freq;
-      freq = f;
+      freq = undefined;
     }
+
     this.started = false;
 
     // components
     this.phaseAmount = undefined;
 
     // connections
-    this.oscillator = p5sound.audiocontext.createOscillator();
-    this.output = p5sound.audiocontext.createGain();
-
-    this._targetFreq = freq || 440;
-    Object.defineProperties(this, {
-      'f': {
-        get: function() {
-          if (typeof this._targetFreq === 'number') {
-            return this._targetFreq;
-          } else {
-            return this.oscillator.frequency.value;
-          }
-        }
-      }
-    });
+    this.oscillator = this.audiocontext.createOscillator();
+    this.output = this.audiocontext.createGain();
 
     this.oscillator.type = type || 'sine';
-    AudioParamUtils.setValue(this.oscillator.frequency, this.f);
-    // set default output gain to 0.5
-    AudioParamUtils.setValue(this.output.gain, 0.5);
+
+    if (freq) {
+      this.freq(freq);
+    }
+    this.amp(0.5);
 
     this.oscillator.connect(this.output);
     // stereo panning
@@ -111,10 +98,9 @@ define(function (require) {
 
     //array of math operation signal chaining
     this.mathOps = [this.output];
-
-    // add to the soundArray so we can dispose of the osc later
-    p5sound.soundArray.push(this);
   };
+
+  p5.Oscillator.prototype = Object.create(SoundNode.prototype);
 
   /**
    *  Start an oscillator. Accepts an optional parameter to
@@ -125,31 +111,32 @@ define(function (require) {
    *  @param  {Number} [time] startTime in seconds from now.
    *  @param  {Number} [frequency] frequency in Hz.
    */
-  p5.Oscillator.prototype.start = function(time, f) {
+  p5.Oscillator.prototype.start = function(time, freq) {
     if (this.started) {
-      var now = p5sound.audiocontext.currentTime;
-      this.stop(now);
-    }
-    if (!this.started) {
-      var freq = f || this.f;
-      var type = this.oscillator.type;
-
-      // set old osc free to be garbage collected (memory)
-      if (this.oscillator) {
-        this.oscillator.disconnect();
-        this.oscillator = undefined;
+      console.warn('Oscillator is already started');
+      if (freq) {
+        this.freq(freq);
       }
-
-      this.oscillator = p5sound.audiocontext.createOscillator();
-      AudioParamUtils.setValue(this.oscillator.frequency, Math.abs(freq));
-      this.oscillator.type = type;
-
-      this.oscillator.connect(this.output);
-      time = time || 0;
-      this.oscillator.start(time + p5sound.audiocontext.currentTime);
-
-      this.started = true;
+      return;
     }
+    var type = this.oscillator.type;
+    var freq = freq || this.freq();
+
+    // set old osc free to be garbage collected (memory)
+    if (this.oscillator) {
+      this.oscillator.disconnect();
+      this.oscillator = undefined;
+    }
+
+    this.oscillator = this.audiocontext.createOscillator();
+    this.oscillator.type = type;
+    this.freq(freq);
+
+    this.oscillator.connect(this.output);
+    time = time || 0;
+    this.oscillator.start(time + this.audiocontext.currentTime);
+
+    this.started = true;
   };
 
   /**
@@ -183,7 +170,7 @@ define(function (require) {
    *                              returns the amplitude value
    */
   p5.Oscillator.prototype.amp = function(vol, rampTime, tFromNow) {
-    return AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
+    return this._scheduleAudioParamValue(this.output.gain, vol, rampTime, tFromNow);
   };
 
   // these are now the same thing
@@ -214,7 +201,7 @@ define(function (require) {
    */
   p5.Oscillator.prototype.freq = function(val, rampTime, tFromNow) {
     this._targetFreq = val;
-    return AudioParamUtils.setExponentialValue(this.oscillator.frequency, val, rampTime, tFromNow);
+    return this._scheduleExponentialAudioParamValue(this.oscillator.frequency, val, rampTime, tFromNow);
   };
 
   p5.Oscillator.prototype.getFreq = function() {
@@ -276,12 +263,10 @@ define(function (require) {
 
   // get rid of the oscillator
   p5.Oscillator.prototype.dispose = function() {
-    // remove reference from soundArray
-    var index = p5sound.soundArray.indexOf(this);
-    p5sound.soundArray.splice(index, 1);
+    SoundNode.prototype.dispose.apply(this);
 
     if (this.oscillator) {
-      var now = p5sound.audiocontext.currentTime;
+      var now = this.audiocontext.currentTime;
       this.stop(now);
       this.disconnect();
       this.panner = null;
@@ -302,14 +287,14 @@ define(function (require) {
    *  @param  {Number} phase float between 0.0 and 1.0
    */
   p5.Oscillator.prototype.phase = function(p) {
-    var delayAmt = p5.prototype.map(p, 0, 1.0, 0, 1/this.f);
-    var now = p5sound.audiocontext.currentTime;
+    var delayAmt = p5.prototype.map(p, 0, 1.0, 0, 1/this.freq());
+    var now = this.audiocontext.currentTime;
 
     this.phaseAmount = p;
 
     if (!this.dNode) {
       // create a delay node
-      this.dNode = p5sound.audiocontext.createDelay();
+      this.dNode = this.audiocontext.createDelay();
       // put the delay node in between output and panner
       this.oscillator.disconnect();
       this.oscillator.connect(this.dNode);

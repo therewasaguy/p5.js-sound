@@ -1,10 +1,8 @@
 'use strict';
 
 define(function (require) {
-
   var p5sound = require('master');
   var p5Oscillator = require('oscillator');
-  var AudioParamUtils = require('utils/audioParam');
 
   /**
    *  Creates a Pulse object, an oscillator that implements
@@ -61,8 +59,8 @@ define(function (require) {
 
     // set delay time based on PWM width
     var mW = this.w / this.oscillator.frequency.value;
-    AudioParamUtils.setValue(this.dNode.delayTime, mW);
-    AudioParamUtils.setValue(this.dcGain.gain, 1.7*(0.5-this.w));
+    this._scheduleLinearAudioParamValue(this.dNode.delayTime, mW);
+    this._scheduleLinearAudioParamValue(this.dcGain.gain, 1.7*(0.5-this.w));
 
     // disconnect osc2 and connect it to delay, which is connected to output
     this.osc2.disconnect();
@@ -71,7 +69,7 @@ define(function (require) {
     this.osc2.output.connect(this.dNode);
     this.dNode.connect(this.output);
 
-    AudioParamUtils.setValue(this.output.gain, 1);
+    this._scheduleLinearAudioParamValue(this.output.gain, 1);
     this.output.connect(this.panner);
   };
 
@@ -91,10 +89,10 @@ define(function (require) {
         this.w = w;
         // set delay time based on PWM width
         var mW = this.w / this.oscillator.frequency.value;
-        AudioParamUtils.setValue(this.dNode.delayTime, mW);
+        this._scheduleLinearAudioParamValue(this.dNode.delayTime, mW);
       }
 
-      AudioParamUtils.setValue(this.dcGain.gain, 1.7*(0.5-this.w));
+      this._scheduleLinearAudioParamValue(this.dcGain.gain, 1.7*(0.5-this.w));
     } else {
       w.connect(this.dNode.delayTime);
       var sig = new p5.SignalAdd(-0.5);
@@ -109,7 +107,7 @@ define(function (require) {
     var now = p5sound.audiocontext.currentTime;
     var t = time || 0;
     if (!this.started) {
-      var freq = f || this.f;
+      var freq = f || this.freq();
       var type = this.oscillator.type;
       this.oscillator = p5sound.audiocontext.createOscillator();
       this.oscillator.frequency.setValueAtTime(freq, now);
@@ -147,9 +145,12 @@ define(function (require) {
   };
 
   p5.Pulse.prototype.freq = function(val, rampTime, tFromNow) {
-    p5Oscillator.prototype.freq.call(this, val, rampTime, tFromNow);
-    p5Oscillator.prototype.freq.call(this.osc2, val, rampTime, tFromNow);
-    return this.f;
+    var f = p5Oscillator.prototype.freq.call(this, val, rampTime, tFromNow);
+    if (this.osc2) {
+      this._scheduleExponentialAudioParamValue(this.osc2.oscillator.frequency,
+        val, rampTime, tFromNow);
+    }
+    return f;
   };
 
   // inspiration: http://webaudiodemos.appspot.com/oscilloscope/

@@ -1,8 +1,7 @@
 'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
-  var AudioParamUtils = require('utils/audioParam');
+  var SoundNode = require('./src/utils/SoundNode');
 
   /**
    *  A gain node is usefull to set the relative volume of sound.
@@ -71,18 +70,16 @@ define(function (require) {
    */
 
   p5.Gain = function() {
-    this.ac = p5sound.audiocontext;
+    SoundNode.call(this);
 
-    this.input = this.ac.createGain();
-    this.output = this.ac.createGain();
+    this.input = this.audiocontext.createGain();
+    this.output = this.audiocontext.createGain();
 
     // otherwise, Safari distorts
-    AudioParamUtils.setValue(this.input.gain, 0.5);
+    this._scheduleAudioParamValue(this.input.gain, 0.5);
     this.input.connect(this.output);
-
-    // add  to the soundArray
-    p5sound.soundArray.push(this);
   };
+  p5.Gain.prototype = Object.create(SoundNode.prototype);
 
   /**
    *  Connect a source to the gain node.
@@ -127,13 +124,12 @@ define(function (require) {
    *                                seconds from now
    */
   p5.Gain.prototype.amp = function(vol, rampTime, tFromNow) {
-    AudioParamUtils.setValue(this.output.gain, vol, rampTime, tFromNow);
+    this._scheduleAudioParamValue(this.output.gain, vol, rampTime, tFromNow);
   };
 
   p5.Gain.prototype.dispose = function() {
-    // remove reference from soundArray
-    var index = p5sound.soundArray.indexOf(this);
-    p5sound.soundArray.splice(index, 1);
+    SoundNode.prototype.dispose.apply(this);
+
     this.output.disconnect();
     this.input.disconnect();
     this.output = undefined;
