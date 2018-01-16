@@ -18,7 +18,6 @@ define(function () {
     if(!audioParam.timelineSignal) {
       audioParam.timelineSignal = new TimelineSignal();
     }
-
     if (typeof val !== 'undefined') {
       audioParam.cancelScheduledValues(acTime);
       audioParam.timelineSignal.cancelScheduledValues(acTime);
@@ -45,10 +44,10 @@ define(function () {
     // `val` can be a number, or an audio control signal
     // `timeFromNow` is when this change begins
     // `rampTime` is how long to ramp the change
-    setValue: function (audioParam, val, rampTime, timeFromNow) {
+    setValue: function(audioParam, val, rampTime, timeFromNow) {
       return setValue(audioParam, val, rampTime, timeFromNow, 'linear');
     },
-    setExponentialValue: function (audioParam, val, rampTime, timeFromNow) {
+    setExponentialValue: function(audioParam, val, rampTime, timeFromNow) {
       return setValue(audioParam, val, rampTime, timeFromNow, 'exponential');
     },
   };
