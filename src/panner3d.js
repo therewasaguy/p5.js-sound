@@ -1,7 +1,6 @@
-'use strict'
+'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
   var Effect = require('effect');
 
   /**
@@ -20,109 +19,97 @@ define(function (require) {
    * @class p5.Panner3D
    * @constructor
    */
-	p5.Panner3D = function() {
-      Effect.call(this);
+  p5.Panner3D = function() {
+    Effect.call(this);
 
-      /**
-       *  <a title="Web Audio Panner docs"  href=
-       *  "https://developer.mozilla.org/en-US/docs/Web/API/PannerNode">
-       *  Web Audio Spatial Panner Node</a>
-       *
-       *  Properties include
-       *    -  <a title="w3 spec for Panning Model"
-       *    href="https://www.w3.org/TR/webaudio/#idl-def-PanningModelType"
-       *    >panningModel</a>: "equal power" or "HRTF"
-       *    -  <a title="w3 spec for Distance Model"
-       *    href="https://www.w3.org/TR/webaudio/#idl-def-DistanceModelType"
-       *    >distanceModel</a>: "linear", "inverse", or "exponential"
-       *
-       *  @property {AudioNode} panner
-       *
-       */
-      this.panner = this.ac.createPanner();
-      this.panner.panningModel = 'HRTF';
-      this.panner.distanceModel = 'linear';
-      this.panner.connect(this.output);
-      this.input.connect(this.panner);
-	};
+    /**
+     *  <a title="Web Audio Panner docs"  href=
+     *  "https://developer.mozilla.org/en-US/docs/Web/API/PannerNode">
+     *  Web Audio Spatial Panner Node</a>
+     *
+     *  Properties include
+     *    -  <a title="w3 spec for Panning Model"
+     *    href="https://www.w3.org/TR/webaudio/#idl-def-PanningModelType"
+     *    >panningModel</a>: "equal power" or "HRTF"
+     *    -  <a title="w3 spec for Distance Model"
+     *    href="https://www.w3.org/TR/webaudio/#idl-def-DistanceModelType"
+     *    >distanceModel</a>: "linear", "inverse", or "exponential"
+     *
+     *  @property {AudioNode} panner
+     *
+     */
+    this.panner = this.audiocontext.createPanner();
+    this.panner.panningModel = 'HRTF';
+    this.panner.distanceModel = 'linear';
+    this.panner.connect(this.output);
+    this.input.connect(this.panner);
+  };
 
   p5.Panner3D.prototype = Object.create(Effect.prototype);
 
 
   /**
-   * Connect an audio sorce
+   * Connect an audio source
    *
    * @method  process
    * @param  {Object} src Input source
    */
   p5.Panner3D.prototype.process = function(src) {
     src.connect(this.input);
-  }
+  };
+
   /**
    * Set the X,Y,Z position of the Panner
    * @method set
    * @param  {Number} xVal
    * @param  {Number} yVal
    * @param  {Number} zVal
-   * @param  {Number} time
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Array}      Updated x, y, z values as an array
    */
-  p5.Panner3D.prototype.set = function(xVal, yVal, zVal, time) {
-    this.positionX(xVal,time);
-    this.positionY(yVal,time);
-    this.positionZ(zVal,time);
-    return [this.panner.positionX.value,
-              this.panner.positionY.value,
-              this.panner.positionZ.value];
+  p5.Panner3D.prototype.set = function(xVal, yVal, zVal, rampTime, timeFromNow) {
+    return [this.positionX(xVal, rampTime, timeFromNow),
+      this.positionY(yVal, rampTime, timeFromNow),
+      this.positionZ(zVal, rampTime, timeFromNow)];
   };
 
   /**
    * Getter and setter methods for position coordinates
    * @method positionX
+   * @param  {Number} value
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Number}      updated coordinate value
    */
   /**
    * Getter and setter methods for position coordinates
    * @method positionY
+   * @param  {Number} value
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Number}      updated coordinate value
    */
   /**
    * Getter and setter methods for position coordinates
    * @method positionZ
+   * @param  {Number} value
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Number}      updated coordinate value
    */
-  p5.Panner3D.prototype.positionX = function(xVal, time) {
-    var t = time || 0;
-    if (typeof xVal === 'number') {
-      this.panner.positionX.value = xVal;
-      this.panner.positionX.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.panner.positionX.linearRampToValueAtTime(xVal, this.ac.currentTime + 0.02 + t);
-    } else if (xVal) {
-      xVal.connect(this.panner.positionX);
-    }
-    return this.panner.positionX.value;
+  p5.Panner3D.prototype.positionX = function(xVal, rampTime, timeFromNow) {
+    return this._scheduleAudioParamValue(this.panner.positionX, xVal, rampTime, timeFromNow);
   };
-  p5.Panner3D.prototype.positionY = function(yVal, time) {
-    var t = time || 0;
-    if (typeof yVal === 'number') {
-      this.panner.positionY.value = yVal;
-      this.panner.positionY.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.panner.positionY.linearRampToValueAtTime(yVal, this.ac.currentTime + 0.02 + t);
-    } else if (yVal) {
-      yVal.connect(this.panner.positionY);
-    }
-    return this.panner.positionY.value;
+  p5.Panner3D.prototype.positionY = function(yVal, rampTime, timeFromNow) {
+    return this._scheduleAudioParamValue(this.panner.positionY, yVal, rampTime, timeFromNow);
   };
-  p5.Panner3D.prototype.positionZ = function(zVal, time) {
-    var t = time || 0;
-    if (typeof zVal === 'number') {
-      this.panner.positionZ.value = zVal;
-      this.panner.positionZ.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.panner.positionZ.linearRampToValueAtTime(zVal, this.ac.currentTime + 0.02 + t);
-    } else if (zVal) {
-      zVal.connect(this.panner.positionZ);
-    }
-    return this.panner.positionZ.value;
+  p5.Panner3D.prototype.positionZ = function(zVal, rampTime, timeFromNow) {
+    return this._scheduleAudioParamValue(this.panner.positionZ, zVal, rampTime, timeFromNow);
   };
 
   /**
@@ -131,65 +118,52 @@ define(function (require) {
    * @param  {Number} xVal
    * @param  {Number} yVal
    * @param  {Number} zVal
-   * @param  {Number} time
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Array}      Updated x, y, z values as an array
    */
-  p5.Panner3D.prototype.orient = function(xVal, yVal, zVal, time) {
-  this.orientX(xVal,time);
-  this.orientY(yVal,time);
-  this.orientZ(zVal,time);
-  return [this.panner.orientationX.value,
-          this.panner.orientationY.value,
-          this.panner.orientationZ.value];
+  p5.Panner3D.prototype.orient = function(xVal, yVal, zVal, rampTime, timeFromNow) {
+    return [this.orientX(xVal, rampTime, timeFromNow),
+      this.orientY(yVal, rampTime, timeFromNow),
+      this.orientZ(zVal, rampTime, timeFromNow)];
   };
 
   /**
    * Getter and setter methods for orient coordinates
    * @method orientX
+   * @param  {Number} value
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Number}      updated coordinate value
    */
   /**
    * Getter and setter methods for orient coordinates
    * @method orientY
+   * @param  {Number} value
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @return {Number}      updated coordinate value
    */
   /**
    * Getter and setter methods for orient coordinates
+   * @param  {Number} value
+   * @param {Number} [rampTime] create a fade that lasts rampTime in seconds
+   * @param {Number} [timeFromNow] schedule this event to begin
+   *                                seconds from now
    * @method orientZ
    * @return {Number}      updated coordinate value
    */
-  p5.Panner3D.prototype.orientX = function(xVal, time) {
-    var t = time || 0;
-    if (typeof xVal === 'number') {
-      this.panner.orientationX.value = xVal;
-      this.panner.orientationX.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.panner.orientationX.linearRampToValueAtTime(xVal, this.ac.currentTime + 0.02 + t);
-    } else if (xVal) {
-      xVal.connect(this.panner.orientationX);
-    }
-    return this.panner.orientationX.value;
+  p5.Panner3D.prototype.orientX = function(xVal, rampTime, timeFromNow) {
+    return this._scheduleAudioParamValue(this.panner.orientationX, xVal, rampTime, timeFromNow);
   };
-  p5.Panner3D.prototype.orientY = function(yVal, time) {
-    var t = time || 0;
-    if (typeof yVal === 'number') {
-      this.panner.orientationY.value = yVal;
-      this.panner.orientationY.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.panner.orientationY.linearRampToValueAtTime(yVal, this.ac.currentTime + 0.02 + t);
-    } else if (yVal) {
-      yVal.connect(this.panner.orientationY);
-    }
-    return this.panner.orientationY.value;
+  p5.Panner3D.prototype.orientY = function(yVal, rampTime, timeFromNow) {
+    return this._scheduleAudioParamValue(this.panner.orientationY, yVal, rampTime, timeFromNow);
   };
-  p5.Panner3D.prototype.orientZ = function(zVal, time) {
-    var t = time || 0;
-    if (typeof zVal === 'number') {
-      this.panner.orientationZ.value = zVal;
-      this.panner.orientationZ.cancelScheduledValues(this.ac.currentTime + 0.01 + t);
-      this.panner.orientationZ.linearRampToValueAtTime(zVal, this.ac.currentTime + 0.02 + t);
-    } else if (zVal) {
-      zVal.connect(this.panner.orientationZ);
-    }
-    return this.panner.orientationZ.value;
+  p5.Panner3D.prototype.orientZ = function(zVal, rampTime, timeFromNow) {
+    return this._scheduleAudioParamValue(this.panner.orientationZ, zVal, rampTime, timeFromNow);
   };
 
   /**
@@ -208,7 +182,7 @@ define(function (require) {
    * @param  {Number} maxDistance
    * @return {Number} updated value
    */
-  p5.Panner3D.prototype.maxDist = function(maxDistance){
+  p5.Panner3D.prototype.maxDist = function(maxDistance) {
     if (typeof maxDistance === 'number') {
       this.panner.maxDistance = maxDistance;
     }
@@ -221,7 +195,7 @@ define(function (require) {
    * @param  {Number} rolloffFactor
    * @return {Number} updated value
    */
-  p5.Panner3D.prototype.rolloff = function(rolloffFactor){
+  p5.Panner3D.prototype.rolloff = function(rolloffFactor) {
     if (typeof rolloffFactor === 'number') {
       this.panner.rolloffFactor = rolloffFactor;
     }
