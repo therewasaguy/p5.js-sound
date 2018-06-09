@@ -1,9 +1,8 @@
 'use strict';
 
 define(function (require) {
-  var CustomError = require('errorHandler');
-  var Effect = require('effect');
-  require('sndcore');
+  var CustomError = require('./errorHandler');
+  var Effect = require('./effect');
 
   /**
    *  Reverb adds depth to a sound through a large number of decaying

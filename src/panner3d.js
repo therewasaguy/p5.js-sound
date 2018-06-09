@@ -1,8 +1,8 @@
 'use strict'
 
 define(function (require) {
-  var p5sound = require('master');
-  var Effect = require('effect');
+  var p5sound = require('./master');
+  var Effect = require('./effect');
 
   /**
    * Panner3D is based on the <a title="Web Audio Panner docs"  href=

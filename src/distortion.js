@@ -2,11 +2,9 @@
 
 define(function (require) {
 
-  var Effect = require('effect');
+  var Effect = require('./effect');
 
-  /*
-   * Adapted from [Kevin Ennis on StackOverflow](http://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion)
-   */
+  //Adapted from [Kevin Ennis on StackOverflow](http://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion)
   function makeDistortionCurve(amount) {
     var k = typeof amount === 'number' ? amount : 50;
     var numSamples = 44100;

@@ -1,8 +1,8 @@
 'use strict';
 define(function (require) {
 
-  var p5sound = require('master');
-  var AudioVoice = require('audioVoice');
+  var p5sound = require('./master');
+  var AudioVoice = require('./audioVoice');
 
   /**
     *  A MonoSynth is used as a single voice for sound synthesis.

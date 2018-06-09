@@ -1,8 +1,8 @@
 'use strict'
 
 define(function (require) {
-  var p5sound = require('master');
-  var Effect = require('effect');
+  var p5sound = require('./master');
+  var Effect = require('./effect');
 
 //  /**
 //   * listener is a class that can construct both a Spatial Panner

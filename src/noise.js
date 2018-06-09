@@ -1,7 +1,7 @@
 'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
+  var p5sound = require('./master');
 
   /**
    *  Noise is a type of oscillator that generates a buffer with random values.

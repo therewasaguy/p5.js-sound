@@ -1,8 +1,8 @@
 'use strict';
 
 define(function (require) {
-  var Filter = require('filter');
-  var p5sound = require('master');
+  var Filter = require('./filter');
+  var p5sound = require('./master');
 
   /**
    *  EQFilter extends p5.Filter with constraints

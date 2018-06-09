@@ -1,9 +1,9 @@
 define(function (require) {
 	'use strict';
 
-	var p5sound = require('master');
-	var Effect = require('effect');
-  var CustomError = require('errorHandler');
+	var p5sound = require('./master');
+	var Effect = require('./effect');
+  var CustomError = require('./errorHandler');
 
   /**
    * Compressor is an audio effect class that performs dynamics compression

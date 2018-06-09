@@ -1,8 +1,8 @@
 'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
-  var Effect = require('effect');
+  var p5sound = require('./master');
+  var Effect = require('./effect');
 
   /**
    *  <p>A p5.Filter uses a Web Audio Biquad Filter to filter

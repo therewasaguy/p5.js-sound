@@ -1,7 +1,7 @@
 'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
+  var p5sound = require('./master');
 
   // requires the Tone.js library's Clock (MIT license, Yotam Mann)
   // https://github.com/TONEnoTONE/Tone.js/

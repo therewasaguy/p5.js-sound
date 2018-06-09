@@ -10,7 +10,7 @@ define(function (require) {
   var Scale = require('Tone/signal/Scale');
 
   var Tone = require('Tone/core/Tone');
-  var p5sound = require('master');
+  var p5sound = require('./master');
   Tone.setContext( p5sound.audiocontext);
 
   /**

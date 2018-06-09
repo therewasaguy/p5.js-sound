@@ -2,7 +2,7 @@
 
 define(function (require) {
 
-  var p5sound = require('master');
+  var p5sound = require('./master');
   var Add = require('Tone/signal/Add');
   var Mult = require('Tone/signal/Multiply');
   var Scale = require('Tone/signal/Scale');

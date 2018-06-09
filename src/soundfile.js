@@ -1,12 +1,10 @@
 'use strict';
 
 define(function (require) {
-
-  require('sndcore');
-  var CustomError = require('errorHandler');
-  var p5sound = require('master');
+  var CustomError = require('./errorHandler');
+  var p5sound = require('./master');
   var ac = p5sound.audiocontext;
-  var midiToFreq = require('helpers').midiToFreq;
+  var midiToFreq = require('./helpers').midiToFreq;
 
   /**
    *  <p>SoundFile object with a path to a file.</p>
