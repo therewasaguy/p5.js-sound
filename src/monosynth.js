@@ -46,10 +46,10 @@ define(function (require) {
     *  </code></div>
     **/
 
-  p5.MonoSynth = function () {
+  p5.MonoSynth = function (type) {
     AudioVoice.call(this);
 
-    this.oscillator = new p5.Oscillator();
+    this.oscillator = new p5.Oscillator(type);
 
     this.env = new p5.Envelope();
     this.env.setRange(1, 0);
