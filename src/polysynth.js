@@ -5,6 +5,8 @@ define(function (require) {
   var TimelineSignal = require('Tone/signal/TimelineSignal');
   var noteToFreq = require('helpers').noteToFreq;
 
+  var DEFAULT_SUSTAIN = 0.15;
+
   /**
     *  An AudioVoice is used as a single voice for sound synthesis.
     *  The PolySynth class holds an array of AudioVoice, and deals
@@ -51,7 +53,7 @@ define(function (require) {
     *  }
     *  </code></div>
     **/
-  p5.PolySynth = function(audioVoice, maxVoices) {
+  p5.PolySynth = function(type, audioVoice, maxVoices) {
     //audiovoices will contain maxVoices many monophonic synths
     this.audiovoices = [];
 
@@ -74,6 +76,7 @@ define(function (require) {
      * @property polyvalue
      */
     this.maxVoices = maxVoices || 8;
+    this.nextVoiceIndex = 0;
 
     /**
      * Monosynth that generates the sound for each note that is triggered. The
@@ -94,7 +97,7 @@ define(function (require) {
     this.connect();
 
     //Construct the appropriate number of audiovoices
-    this._allocateVoices();
+    this._allocateVoices(type);
     p5sound.soundArray.push(this);
   };
 
@@ -103,9 +106,9 @@ define(function (require) {
    * @private
    * @method  _allocateVoices
    */
-  p5.PolySynth.prototype._allocateVoices = function() {
+  p5.PolySynth.prototype._allocateVoices = function(type) {
     for(var i = 0; i< this.maxVoices; i++) {
-      this.audiovoices.push(new this.AudioVoice());
+      this.audiovoices.push(new this.AudioVoice(type));
       this.audiovoices[i].disconnect();
       this.audiovoices[i].connect(this.output);
     }
@@ -152,10 +155,12 @@ define(function (require) {
    *  }
    *  </code></div>
    */
-  p5.PolySynth.prototype.play = function (note,velocity, secondsFromNow, susTime) {
-    var susTime = susTime || 1;
-    this.noteAttack(note, velocity, secondsFromNow);
-    this.noteRelease(note, secondsFromNow + susTime);
+  p5.PolySynth.prototype.play = function (note, velocity, secondsFromNow, susTime) {
+    this.audiovoices[this.nextVoiceIndex].triggerAttack(note, velocity, secondsFromNow);
+    var releaseTime = ~~secondsFromNow + (susTime || DEFAULT_SUSTAIN);
+    this.audiovoices[this.nextVoiceIndex].triggerRelease(releaseTime);
+    this.nextVoiceIndex++;
+    this.nextVoiceIndex %= this.maxVoices;
   };
 
 
@@ -298,6 +303,7 @@ define(function (require) {
     }
     this.audiovoices[currentVoice].triggerAttack(note, velocity, secondsFromNow);
   };
+
 
   /**
    * Private method to ensure accurate values of this._voicesInUse
