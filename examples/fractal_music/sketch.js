@@ -11,8 +11,8 @@
  */
 
 var rules = {
-  "+":["+","-"],
-  "-":["+"]
+  "+":["+","+","-"],
+  "-":["+","-","-"]
 };
 var seqIndex = 0;
 var noteIndex = -1;
@@ -53,9 +53,9 @@ function soundLoop(cycleStartTime) {
 
   var beatSeconds = 0.5; // Define 1 beat as half a second
   if (sequences[seqIndex][noteIndex] === "+") {
-    pitch++;
+    pitch += 4;
   } else {
-    pitch--;
+    pitch -= 4;
   }
   var velocity = 0.8;
   var duration = random([beatSeconds, beatSeconds/2, beatSeconds/2, beatSeconds/4]);
