@@ -5,7 +5,7 @@
 var synth;
 var sloop;
 
-var validNotes = [...Array(128).keys()];
+var validNotes = [...Array(48).keys()].map(key => key + 36);
 var minValidNote, maxValidNote;
 var songLength = 32; // 4 bars * 8th-note resolution
 
@@ -21,6 +21,8 @@ var notePlaybackIndex;
 var desiredKeyClasses = [0,2,4,5,7,9,11];
 var minGoodPitch = 48;
 var maxGoodPitch = 72;
+
+var consonantIntervals = [0, 4, 5, 7];
 
 function setup() {
   createCanvas(window.innerWidth, window.innerHeight);
@@ -59,11 +61,11 @@ function soundLoop(cycleStartTime) {
   var velocity = 0.7;
   var midiNote = population[clickedEarwormIndex].notes[notePlaybackIndex];
   var noteFreq = midiToFreq(midiNote);
-  synth.play(noteFreq, velocity, 0, duration);
+  synth.play(noteFreq, velocity, cycleStartTime, duration);
   // Move forward the index, and stop if we've reached the end
   notePlaybackIndex++;
   if (notePlaybackIndex >= population[clickedEarwormIndex].notes.length) {
-    this.stop();
+    this.stop(cycleStartTime);
     songIsPlaying = false;
   }
 }
@@ -196,30 +198,79 @@ Earworm.prototype.display = function() {
   pop();
 };
 Earworm.prototype.calculateFitness = function() {
-  this.fitnessScore = 0;
-  // Key
-  for (var i=0; i<this.notes.length; i++) {
-    var keyClass = this.notes[i] % 12;
-    if (desiredKeyClasses.indexOf(keyClass) >= 0) {
-      this.fitnessScore = this.fitnessScore + 10;
+  var notes = this.notes;
+  var len = this.notes.length;
+
+  var keyClasses = [];
+  var noteCounts = {};
+
+  var notesWithGoodRange = 0;
+  var rangeCohesion = 0;
+  var goodIntervals = 0;
+
+  for (var i = 0; i < len; i++) {
+    var note = notes[i];
+    var nextNote = notes[i + 1];
+    var nextNextNote = notes[i + 2];
+
+    var keyClass = note % 12;
+    keyClasses.push(keyClass);
+
+    // check whether interval in consonant
+    var interval = abs(nextNote - note);
+    if (consonantIntervals.indexOf(interval) > -1) {
+      goodIntervals++;
     }
+
+    // check range
+    if (note <= maxGoodPitch && note >= minGoodPitch) {
+      notesWithGoodRange++;
+    }
+
+    // store individual notes that occur more than once in this sequence
+    if (noteCounts[keyClass] == undefined) {
+      noteCounts[keyClass] = -1;
+    }
+    noteCounts[keyClass]++;
+
+    // store repeated 2x note sequences
+    var seq2x = keyClass + '-' + nextNote;
+    if (noteCounts[seq2x] == undefined) {
+      noteCounts[seq2x] = -10;
+    }
+    noteCounts[seq2x] += 10;
+
+    // store repeated 3x note sequences
+    var seq3x = keyClass + '-' + nextNote + '-' + nextNextNote;
+    if (noteCounts[seq3x] == undefined) {
+      noteCounts[seq3x] = -20;
+    }
+    noteCounts[seq3x] += 20;
   }
-  // Prefer smaller intervals
-  for (var i=0; i<this.notes.length-1; i++) {
-    var currentNote = this.notes[i];
-    var nextNote = this.notes[i+1];
-    var interval = abs(nextNote - currentNote);
-    this.fitnessScore = this.fitnessScore - interval;
-  }
+
+
   // Pitch range
-  for (var i=0; i<this.notes.length; i++) {
-    if (this.notes[i] > minGoodPitch) {
-      this.fitnessScore = this.fitnessScore + 5;
-    }
-    if (this.notes[i] < maxGoodPitch) {
-      this.fitnessScore = this.fitnessScore + 5;
-    }
+  var highestNote = max(this.notes);
+  var lowestNote = min(this.notes);
+  if (highestNote - lowestNote <= 24) {
+    rangeCohesion += 50;
   }
+  if (highestNote <= maxGoodPitch) {
+    rangeCohesion += 50;
+  }
+  if (lowestNote > minGoodPitch) {
+    rangeCohesion += 50;
+  }
+
+  // weight scores
+  var rangeScore = notesWithGoodRange / len * (rangeCohesion + 50);
+  var repeatedNotesScore = Object.values(noteCounts).reduce((a, b) => a + b);
+  var keyClassScore = keyClasses.filter(c => desiredKeyClasses.indexOf(c) > -1).length / len * 100;
+  var consonanceScore = goodIntervals / len * 200;
+
+  console.log(rangeScore, repeatedNotesScore, keyClassScore, consonanceScore);
+
+  this.fitnessScore += repeatedNotesScore + keyClassScore + rangeScore + consonanceScore;
 };
 Earworm.prototype.reproduceWith = function(partner) {
   var partitionIndex = round(random(this.notes.length));
