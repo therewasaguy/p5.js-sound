@@ -1,3 +1,7 @@
+const wrap = require('browserify-wrap');
+const bannerTemplate = '/*! p5.sound.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+const derequire = require('derequire');
+
 module.exports = function(grunt) {
 
   grunt.initConfig({
@@ -22,6 +26,28 @@ module.exports = function(grunt) {
         },
       }
     },
+    browserify: {
+      unmin: {
+        src: ['src/app.js'],
+        dest: 'lib/p5.sound.js',
+        options: {
+          browserifyOptions: { debug: false },
+          // transform: [["babelify", { "presets": ["env"] }]],
+          external: [
+            'tone'
+          ],
+          // postBundleCB: function(err, src, next) {
+          //   next(err, derequire(src));
+          // },
+          // plugin: [function(b) {
+          //   b.plugin(wrap, {
+          //     prefix: grunt.template.process(bannerTemplate) + grunt.file.read('./fragments/before.frag'),
+          //     suffix: grunt.file.read('./fragments/after.frag')
+          //   });
+          // }]
+        }
+      }
+    },
     requirejs: {
       unmin: {
         options: {
@@ -40,6 +66,20 @@ module.exports = function(grunt) {
                     'indent': {
                       'style': '  ',
                       'adjustMultiLineComment': true
+                    }
+                  }
+                }
+              });
+            } else if (path.indexOf('node_modules/unmute') > -1) {
+              // return '/** Unmute by Yotam Mann, MIT License 2018 https://github.com/tonejs/unmute http://opensource.org/licenses/MIT **/\n' +
+              return require('amdclean').clean({
+                code: contents,
+                escodegen: {
+                  comment: false,
+                  format: {
+                    indent: {
+                      style: '  ',
+                      adjustMultiLineComment: true
                     }
                   }
                 }
@@ -63,6 +103,7 @@ module.exports = function(grunt) {
           out: 'lib/p5.sound.js',
           paths: {
             'Tone' : 'node_modules/tone/Tone',
+            'unmuteButton' : 'node_modules/unmute/build/unmute',
             'automation-timeline': 'node_modules/web-audio-automation-timeline/build/automation-timeline-amd',
             'panner' : 'src/panner',
             'shims': 'src/shims',
@@ -111,15 +152,12 @@ module.exports = function(grunt) {
           findNestedDependencies: true,
           include: ['src/app'],
           onBuildWrite: function( name, path, contents ) {
-          if (path.indexOf('node_modules/tone/') > -1) {
-            return require('amdclean').clean({
-              'code':contents.replace(/console.log(.*);/g, ''),
-               'escodegen': {
-                 'comment': false
-               }
+          if (path.indexOf('node_modules/') > -1) {
+            return require('babel')({
+              filename: path
             });
           } else {
-             return require('amdclean').clean({
+             return require('babel').clean({
                 'code':contents,
                  'escodegen': {
                    'comment': false
@@ -169,9 +207,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-open');
+  grunt.loadNpmTasks('grunt-browserify');
 
   grunt.registerTask('lint', ['eslint:source']);
-  grunt.registerTask('default', ['requirejs']);
+  grunt.registerTask('default', ['browserify']);
   grunt.registerTask('dev', ['connect','requirejs', 'watch']);
   grunt.registerTask('serve', 'connect:server:keepalive');
   grunt.registerTask('run-tests', ['serve', 'open']);
