@@ -71,4 +71,7 @@
   else
     factory(root['p5']);
 }(this, function (p5) {
+  if (typeof module === undefined) {
+    module = {}
+  }
   

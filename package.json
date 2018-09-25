@@ -19,7 +19,7 @@
     "grunt-open": "^0.2.3"
   },
   "dependencies": {
-    "tone": "0.10.0"
+    "tone": "~13.3.2"
   },
   "scripts": {
     "build": "grunt",

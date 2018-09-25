@@ -11,7 +11,7 @@ define(function (require) {
   require('soundfile');
   require('amplitude');
   require('fft');
-  require('signal');
+  // require('signal');
   require('oscillator');
   require('envelope');
   require('pulse');
@@ -28,7 +28,7 @@ define(function (require) {
   require('soundloop');
   require('compressor');
   require('soundRecorder');
-  require('peakdetect');
+  // require('peakdetect');
   require('gain');
   require('monosynth');
   require('polysynth');

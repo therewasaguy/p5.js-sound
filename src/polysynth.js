@@ -2,7 +2,7 @@
 define(function (require) {
 
   var p5sound = require('master');
-  var TimelineSignal = require('Tone/signal/TimelineSignal');
+  var TimelineSignal = require('Tone/signal/TransportTimelineSignal');
   var noteToFreq = require('helpers').noteToFreq;
 
   /**

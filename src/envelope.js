@@ -6,10 +6,7 @@ define(function (require) {
   var Add = require('Tone/signal/Add');
   var Mult = require('Tone/signal/Multiply');
   var Scale = require('Tone/signal/Scale');
-  var TimelineSignal = require('Tone/signal/TimelineSignal');
-
-  var Tone = require('Tone/core/Tone');
-  Tone.setContext( p5sound.audiocontext);
+  var TimelineSignal = require('Tone/signal/TransportTimelineSignal');
 
   /**
    *  <p>Envelopes are pre-defined amplitude distribution over time.
@@ -567,7 +564,7 @@ define(function (require) {
       valToSet = this.control.getValueAtTime(t);
       this.control.cancelScheduledValues(t);
       this.control.linearRampToValueAtTime(valToSet, t);
-     
+
     }
 
     // decay to decay level (if using ADSR, then decay level == sustain level)
