@@ -1,9 +1,9 @@
 'use strict';
 define(function (require) {
 
-  var p5sound = require('master');
-  var AudioVoice = require('audioVoice');
-  var noteToFreq = require('helpers').noteToFreq;
+  var p5sound = require('./master');
+  var AudioVoice = require('./audioVoice');
+  var noteToFreq = require('./helpers').noteToFreq;
 
   var DEFAULT_SUSTAIN = 0.15;
 

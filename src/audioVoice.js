@@ -1,6 +1,6 @@
 'use strict';
 define(function() {
-  var p5sound = require('master');
+  var p5sound = require('./master');
 
   /**
    * Base class for monophonic synthesizers. Any extensions of this class

@@ -1,17 +1,8 @@
 'use strict';
 
-define(function (require) {
-
+define(['Tone/signal/Signal', 'Tone/signal/Add', 'Tone/signal/Multiply', 'Tone/signal/Scale', 'Tone/core/Tone'], function (require, Signal, Add, Mult, Scale, Tone) {
   // Signal is built with the Tone.js signal by Yotam Mann
   // https://github.com/TONEnoTONE/Tone.js/
-  var Signal = require('Tone/signal/Signal');
-  var Add = require('Tone/signal/Add');
-  var Mult = require('Tone/signal/Multiply');
-  var Scale = require('Tone/signal/Scale');
-
-  var Tone = require('Tone/core/Tone');
-  var p5sound = require('master');
-  Tone.setContext( p5sound.audiocontext);
 
   /**
    *  <p>p5.Signal is a constant audio-rate signal used by p5.Oscillator

@@ -1,8 +1,8 @@
 'use strict';
 
 define(function (require) {
-  var Filter = require('filter');
-  var Effect = require('effect');
+  var Filter = require('./filter');
+  var Effect = require('./effect');
 
   /**
    *  Delay is an echo effect. It processes an existing sound source,

@@ -2,11 +2,11 @@
 
 define(function (require) {
 
-  var CustomError = require('errorHandler');
-  var p5sound = require('master');
+  var CustomError = require('./errorHandler');
+  var p5sound = require('./master');
   var ac = p5sound.audiocontext;
-  var midiToFreq = require('helpers').midiToFreq;
-  var convertToWav = require('helpers').convertToWav;
+  var midiToFreq = require('./helpers').midiToFreq;
+  var convertToWav = require('./helpers').convertToWav;
 
   /**
    *  <p>SoundFile object with a path to a file.</p>
@@ -1240,14 +1240,14 @@ define(function (require) {
     cNode.connect( self._scopeNode );
     self._scopeNode.connect( p5.soundOut._silentNode );
 
-    self._scopeNode.onaudioprocess = function(processEvent) {
-      var inputBuffer = processEvent.inputBuffer.getChannelData( 0 );
+    // self._scopeNode.onaudioprocess = function(processEvent) {
+    //   var inputBuffer = processEvent.inputBuffer.getChannelData( 0 );
 
-      self._lastPos = inputBuffer[ inputBuffer.length - 1 ] || 0;
+    //   self._lastPos = inputBuffer[ inputBuffer.length - 1 ] || 0;
 
-      // do any callbacks that have been scheduled
-      self._onTimeUpdate(self._lastPos);
-    };
+    //   // do any callbacks that have been scheduled
+    //   self._onTimeUpdate(self._lastPos);
+    // };
 
     return cNode;
   };

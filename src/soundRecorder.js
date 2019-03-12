@@ -4,8 +4,8 @@ define(function (require) {
 
   // inspiration: recorder.js, Tone.js & typedarray.org
 
-  var p5sound = require('master');
-  var convertToWav = require('helpers').convertToWav;
+  var p5sound = require('./master');
+  var convertToWav = require('./helpers').convertToWav;
   var ac = p5sound.audiocontext;
 
   /**

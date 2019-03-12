@@ -2,7 +2,7 @@
 
 define(function (require) {
 
-  var p5sound = require('master');
+  var p5sound = require('./master');
   var ac = p5sound.audiocontext;
 
   // Stereo panner

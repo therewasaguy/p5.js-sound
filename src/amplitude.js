@@ -1,7 +1,7 @@
 'use strict';
 
 define(function (require) {
-  var p5sound = require('master');
+  var p5sound = require('./master');
 
   /**
    *  Amplitude measures volume between 0.0 and 1.0.

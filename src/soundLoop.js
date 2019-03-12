@@ -1,8 +1,7 @@
 'use strict';
 
-define(function (require) {
-  var p5sound = require('master');
-  var Clock = require('Tone/core/Clock');
+define(['Tone/core/Clock'], function (require, Clock) {
+  var p5sound = require('./master');
 
   /**
    * SoundLoop

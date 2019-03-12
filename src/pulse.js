@@ -2,8 +2,8 @@
 
 define(function (require) {
 
-  var p5sound = require('master');
-  require('oscillator');
+  var p5sound = require('./master');
+  const Oscillator = require('./oscillator');
 
   /**
    *  Creates a Pulse object, an oscillator that implements
@@ -41,7 +41,7 @@ define(function (require) {
    *  </code></div>
    */
   p5.Pulse = function(freq, w) {
-    p5.Oscillator.call(this, freq, 'sawtooth');
+    Oscillator.call(this, freq, 'sawtooth');
 
     // width of PWM, should be betw 0 to 1.0
     this.w = w || 0;
@@ -74,7 +74,7 @@ define(function (require) {
     this.output.connect(this.panner);
   };
 
-  p5.Pulse.prototype = Object.create(p5.Oscillator.prototype);
+  p5.Pulse.prototype = Object.create(Oscillator.prototype);
 
   /**
    *  Set the width of a Pulse object (an oscillator that implements

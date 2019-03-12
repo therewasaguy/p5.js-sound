@@ -2,8 +2,8 @@
 
 define(function (require) {
 
-  var Effect = require('effect');
-  var EQFilter = require('src/eqFilter');
+  var Effect = require('./effect');
+  var EQFilter = require('./eqFilter');
 
   /**
    * p5.EQ is an audio effect that performs the function of a multiband
