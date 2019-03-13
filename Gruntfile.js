@@ -237,9 +237,6 @@ module.exports = function(grunt) {
       bundle
         .on('data', function (data) {
           code += data;
-
-          console.log('code!!!');
-
         })
         .on('end', function () {
           // "code" is complete: create the distributable UMD build by running
