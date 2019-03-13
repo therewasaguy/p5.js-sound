@@ -7,7 +7,7 @@ Tone.Context = Context;
 
 // define(['StartAudioContext', 'Tone/core/Tone'], function (require, StartAudioContext, Tone) {
 // Create the Audio Context
-const audiocontext = new window.AudioContext();
+export const audiocontext = new window.AudioContext();
 Tone.setContext(audiocontext);
 
 /**

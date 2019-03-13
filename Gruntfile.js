@@ -217,7 +217,7 @@ module.exports = function(grunt) {
       .transform(babelify, {
         global: true,
         // ignore: [/\/node_modules\/(?!@vizuaalog\/)/],     // just kidding, only babelify the one module we need
-        presets: ["@babel/preset-env"]
+        presets: ['@babel/preset-env']
       });
 
       const bundle = browseified

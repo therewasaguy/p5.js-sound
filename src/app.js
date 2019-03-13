@@ -3,10 +3,8 @@
 // require('./shims');
 require('./audiocontext');
 const p5SOUND = require('./master');
-// require('./helpers');
-// require('./errorHandler');
 // require('./panner');
-// require('./soundfile');
+require('./soundfile');
 // require('./amplitude');
 // require('./fft');
 // require('./signal');
