@@ -2,7 +2,7 @@ const browserify = require('browserify');
 const babelify = require('babelify');
 const path = require('path');
 // const fs = require('fs');
-const derequire = require('derequire');
+// const derequire = require('derequire');
 
 module.exports = function(grunt) {
 
@@ -211,8 +211,8 @@ module.exports = function(grunt) {
 
       const browserified = browserify('src/app.js', {
         standalone: 'p5SOUND',
-        paths: ['./node_modules/tone/', './src/js/'],
-        debug: param === 'dev' // sourcemaps
+        paths: ['./node_modules/tone/', './src/'],
+        // debug: param === 'dev' // sourcemaps
       })
       .transform(babelify, {
         global: true,
@@ -239,14 +239,8 @@ module.exports = function(grunt) {
           code += data;
         })
         .on('end', function () {
-          // "code" is complete: create the distributable UMD build by running
-          // the bundle through derequire, then write the bundle to disk.
-          // (Derequire changes the bundle's internal "require" function to
-          // something that will not interfere with this module being used
-          // within a separate browserify bundle.)
-
           code += grunt.file.read('./fragments/after.frag');
-          grunt.file.write(libFilePath, derequire(code));
+          grunt.file.write(libFilePath, code);
 
           // Print a success message
           grunt.log.writeln(

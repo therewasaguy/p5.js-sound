@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Master contains AudioContext and the master sound output.
  */
@@ -122,5 +120,4 @@ p5.soundOut._silentNode = p5sound.audiocontext.createGain();
 p5.soundOut._silentNode.gain.value = 0;
 p5.soundOut._silentNode.connect(p5sound.audiocontext.destination);
 
-
-module.exports = p5sound;
+export default p5sound;

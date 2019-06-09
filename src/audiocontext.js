@@ -1,5 +1,3 @@
-'use strict';
-
 const StartAudioContext = require('StartAudioContext');
 import Tone from 'Tone/core/Tone';
 import Context from 'Tone/core/Context';

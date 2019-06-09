@@ -1,5 +1,3 @@
-'use strict';
-
 /*
   Helper function to generate an error
   with a custom stack trace that points to the sketch

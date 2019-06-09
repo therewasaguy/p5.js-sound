@@ -1,5 +1,3 @@
-'use strict';
-
 import ac from './audiocontext';
 
 // Stereo panner

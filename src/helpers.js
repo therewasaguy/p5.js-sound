@@ -1,5 +1,5 @@
 'use strict';
-var p5sound = require('./master');
+const p5sound = require('./master');
 const {isFileSupported} = require('./helpers/isFileSupported');
 
 /**
