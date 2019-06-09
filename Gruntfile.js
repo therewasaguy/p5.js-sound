@@ -196,7 +196,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('lint', ['eslint:source']);
   grunt.registerTask('default', ['requirejs']);
-  grunt.registerTask('dev', ['connect','requirejs', 'watch']);
+  grunt.registerTask('dev', ['connect', 'browserify:dev', 'watch']);
   grunt.registerTask('serve', 'connect:server:keepalive');
   grunt.registerTask('run-tests', ['serve', 'open']);
 
@@ -204,15 +204,15 @@ module.exports = function(grunt) {
     'browserify',
     'compile source code',
     function(param) {
-
       const banner = '/*! p5.sound.js es6 v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n' + grunt.file.read('./fragments/before.frag');
 
       // Reading and writing files is asynchronous
       const done = this.async();
 
-      const browseified = browserify('src/app.js', {
+      const browserified = browserify('src/app.js', {
         standalone: 'p5SOUND',
         paths: ['./node_modules/tone/', './src/js/'],
+        debug: param === 'dev' // sourcemaps
       })
       .transform(babelify, {
         global: true,
@@ -220,12 +220,12 @@ module.exports = function(grunt) {
         presets: ['@babel/preset-env']
       });
 
-      const bundle = browseified
+      const bundle = browserified
         .transform('brfs')
         .bundle()
 
       const isMin = param === 'min';
-      const filename = isMin ? 'p5.sound.pre-min.js' : 'p5.sound.babelified.js';
+      const filename = isMin ? 'p5.sound.pre-min.js' : 'p5.sound.js';
 
       // This file will not exist until it has been built
       const libFilePath = path.resolve('lib/' + filename);
