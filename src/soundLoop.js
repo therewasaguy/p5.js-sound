@@ -3,7 +3,8 @@
 define(function (require) {
   var p5sound = require('master');
   var Clock = require('Tone/core/Clock');
-
+  const p5 = window.p5 || {};
+  console.log('p5', p5);
   /**
    * SoundLoop
    *

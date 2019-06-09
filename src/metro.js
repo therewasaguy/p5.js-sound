@@ -1,11 +1,10 @@
 'use strict';
 
-define(function (require) {
+define(['Tone/core/Clock'], function (require, Clock) {
   var p5sound = require('master');
 
   // requires the Tone.js library's Clock (MIT license, Yotam Mann)
   // https://github.com/TONEnoTONE/Tone.js/
-  var Clock = require('Tone/core/Clock');
 
   p5.Metro = function() {
     this.clock = new Clock({

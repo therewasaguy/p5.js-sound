@@ -1,8 +1,7 @@
 'use strict';
-define(function (require) {
+define(['Tone/component/CrossFade'], function (require, CrossFade) {
 
   var p5sound = require('master');
-  var CrossFade = require('Tone/component/CrossFade');
 
   /**
    * Effect is a base class for audio effects in p5. <br>

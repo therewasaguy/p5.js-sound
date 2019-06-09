@@ -1,6 +1,7 @@
 'use strict';
 
 define(function (require) {
+  global.p5 = window.p5;
 
   require('shims');
   require('audiocontext');
@@ -38,5 +39,4 @@ define(function (require) {
   require('polysynth');
 
   return p5SOUND;
-
 });
